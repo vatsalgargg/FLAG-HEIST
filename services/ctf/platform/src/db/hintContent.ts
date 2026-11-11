@@ -184,7 +184,7 @@ export const INITIAL_HINTS = [
     "challengeId": 13,
     "displayOrder": 1,
     "cost": 3,
-    "content": "The filter blocks literal internal addresses. But there are other ways to represent the same IP."
+    "content": "The filter only checks where your link points first — not where the server ends up after following it. Look for anything on the public site that sends you somewhere else."
   },
   {
     "challengeId": 13,

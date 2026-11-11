@@ -1,3 +1,5 @@
+// Tests exercise challenges independently of unlock order.
+process.env.SEQUENTIAL_UNLOCK = 'false';
 import { hashPassword } from '../auth/password';
 /**
  * Acceptance & Verification Test Suite for Participant Frontend & Complete Platform Lifecycle

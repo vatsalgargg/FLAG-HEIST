@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 import { useCTF } from "@/context/CTFContext";
 
 interface TopBarProps {
-  onHintsClick: () => void;
+  onHintsClick?: () => void;
   onLeaderboardClick: () => void;
 }
 
@@ -33,7 +33,7 @@ export function TopBar({ onHintsClick, onLeaderboardClick }: TopBarProps) {
         </span>
 
         {/* Hints button */}
-        <button
+        {onHintsClick && <button
           onClick={onHintsClick}
           className="flex items-center gap-2 text-sm px-3 py-1.5 rounded cursor-pointer transition-opacity hover:opacity-80"
           style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
@@ -49,7 +49,7 @@ export function TopBar({ onHintsClick, onLeaderboardClick }: TopBarProps) {
             <circle cx="8" cy="11" r="0.5" fill="currentColor" />
           </svg>
           Hints
-        </button>
+        </button>}
 
         {/* Leaderboard button */}
         <button

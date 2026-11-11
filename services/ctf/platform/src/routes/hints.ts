@@ -16,6 +16,7 @@ import { requireNotMaintenanceMode } from '../middleware/maintenance';
 import { rebuildLeaderboardCache } from '../cache/leaderboard';
 import { deleteCacheKey, redis } from '../cache';
 import { appendScoreEvent } from '../scoring/recordScoreEvent';
+import { isChallengeUnlockedForTeam } from '../scoring/calculate';
 
 export const hintsRouter = Router();
 
@@ -146,6 +147,9 @@ hintsRouter.post(['/:hintId/reveal', '/reveal/:hintId'], requireNotMaintenanceMo
 
     const [challenge] = await db.select({ active: challenges.isActive }).from(challenges).where(eq(challenges.id, hint.challengeId)).limit(1);
     if (!challenge?.active) return res.status(400).json({ message: 'This challenge is temporarily unavailable.' });
+    if (!(await isChallengeUnlockedForTeam(teamId, hint.challengeId))) {
+      return res.status(403).json({ error: 'ChallengeLocked', message: 'Solve the previous task first to unlock its hints.' });
+    }
 
     // 2. Idempotent-insert pattern: attempt insert into hints_revealed first
     try {

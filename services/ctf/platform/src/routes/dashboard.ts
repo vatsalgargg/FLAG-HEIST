@@ -27,6 +27,7 @@ import {
   getTeamSolvedChallengeIds,
   getTeamRevealedHintIds,
   getAllChallenges,
+  isChallengeUnlocked,
 } from '../scoring/calculate';
 import { requireTeamAuth } from '../middleware/auth';
 
@@ -117,6 +118,26 @@ dashboardRouter.get('/', requireTeamAuth, async (req: Request, res: Response) =>
     // Build challenge cards with solve status and active/down badge
     const challengeMatrix = challengesList.map((ch) => {
       const isSolved = solvedIds.has(ch.id);
+      const unlocked = isSolved || isChallengeUnlocked(ch.id, challengesList, solvedIds);
+
+      // SECURITY: locked challenges reveal nothing beyond id/points/status.
+      if (!unlocked) {
+        return {
+          id: ch.id,
+          name: ch.name,
+          tier: ch.tier,
+          points: ch.points,
+          isActive: ch.isActive,
+          locked: true,
+          status: 'locked',
+          badge: 'Locked',
+          solved: false,
+          targetUrl: null,
+          accessInfo: null,
+          collabInfo: null,
+          hints: (hintsByChallenge.get(ch.id) || []).map((h) => ({ ...h, content: null })),
+        };
+      }
 
       // Participant target links and access credentials
       let targetUrl: string | null = null;
@@ -161,6 +182,7 @@ dashboardRouter.get('/', requireTeamAuth, async (req: Request, res: Response) =>
         tier: ch.tier,
         points: ch.points,
         isActive: ch.isActive,
+        locked: false,
         // Status and badge indicating open, solved, or temporarily down
         status: !ch.isActive ? 'temporarily_down' : isSolved ? 'solved' : 'unsolved',
         badge: !ch.isActive ? 'Temporarily Down' : isSolved ? 'Solved' : 'Open',

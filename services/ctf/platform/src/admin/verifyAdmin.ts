@@ -1,3 +1,5 @@
+// Tests exercise challenges independently of unlock order.
+process.env.SEQUENTIAL_UNLOCK = 'false';
 /**
  * Comprehensive Acceptance Test Suite for Prompt 6: Admin Panel & Shared Redis Rate Limiting
  *

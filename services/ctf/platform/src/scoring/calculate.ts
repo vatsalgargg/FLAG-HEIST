@@ -140,3 +140,26 @@ export async function getActiveChallenges(): Promise<StaticChallenge[]> {
   const all = await getAllChallenges();
   return all.filter((c) => c.isActive);
 }
+
+// ── Sequential Unlock (room-style progression) ──────────────────────────────
+// A challenge is unlocked once every earlier *active* challenge is solved.
+// Deactivated challenges never block progress. Set SEQUENTIAL_UNLOCK=false to
+// open every challenge at once.
+export function sequentialUnlockEnabled(): boolean {
+  return (process.env.SEQUENTIAL_UNLOCK ?? 'true').trim().toLowerCase() !== 'false';
+}
+
+export function isChallengeUnlocked(
+  challengeId: number,
+  ordered: StaticChallenge[],
+  solvedIds: Set<number>,
+): boolean {
+  if (!sequentialUnlockEnabled()) return true;
+  return ordered.every((c) => c.id >= challengeId || !c.isActive || solvedIds.has(c.id));
+}
+
+export async function isChallengeUnlockedForTeam(teamId: string, challengeId: number): Promise<boolean> {
+  if (!sequentialUnlockEnabled()) return true;
+  const [all, solved] = await Promise.all([getAllChallenges(), getTeamSolvedChallengeIds(teamId)]);
+  return isChallengeUnlocked(challengeId, all, solved);
+}

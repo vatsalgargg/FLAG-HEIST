@@ -134,6 +134,32 @@ export function createChallenge13App(): Application {
     });
   });
 
+  // ── Public landing page: the Link Preview tool and its recent history ─────────
+  app.get('/', (_req: Request, res: Response) => {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(`<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><title>Veyra Link Preview</title>
+<style>body{font-family:system-ui,sans-serif;background:#0b0f19;color:#e2e8f0;max-width:760px;margin:3rem auto;padding:0 1rem}
+h1{color:#38bdf8;font-size:1.5rem}input{width:100%;box-sizing:border-box;background:#111827;border:1px solid #334155;color:#fff;padding:.7rem;margin:.5rem 0}
+button{background:#0284c7;color:#fff;border:0;padding:.7rem 1.2rem;cursor:pointer}table{width:100%;border-collapse:collapse;font-size:.85rem;margin-top:1rem}
+td,th{border-bottom:1px solid #1e293b;padding:.5rem;text-align:left;word-break:break-all}pre{background:#111827;padding:1rem;border:1px solid #1e293b;white-space:pre-wrap;word-break:break-all}</style></head>
+<body><h1>Veyra Link Preview</h1>
+<p>Paste a link to generate a preview card. Links to internal or private addresses are blocked by the security filter.</p>
+<form id="f"><input name="url" placeholder="https://status.veyra.example/"><button>Preview</button></form>
+<pre id="out">API: GET /preview?url=&lt;url&gt;</pre>
+<h2 style="font-size:1rem;margin-top:2rem">Recent previews</h2>
+<table><tr><th>Requested link</th><th>Result</th></tr>
+<tr><td>https://status.veyra.example/</td><td>200</td></tr>
+<tr><td>http://localhost:3013/redirect?target=https://blog.veyra.example/q3-update</td><td>200 (via share-link redirect)</td></tr>
+<tr><td>http://10.0.4.12/</td><td>403 ForbiddenAddress</td></tr></table>
+<script>document.getElementById('f').onsubmit=async e=>{e.preventDefault();const r=await fetch('/preview?url='+encodeURIComponent(e.target.url.value));document.getElementById('out').textContent=JSON.stringify(await r.json(),null,2)}</script>
+</body></html>`);
+  });
+
+  app.get('/robots.txt', (_req: Request, res: Response) => {
+    res.type('text/plain').send('User-agent: *\nDisallow: /redirect\nDisallow: /internal/proc-meta-39\n');
+  });
+
   // ── STAGE 1: Public Open Redirect on Public Demo Site ────────────────────────
   /**
    * The intentional single gap in the filter:
@@ -171,6 +197,8 @@ export function createChallenge13App(): Application {
       hostname.startsWith('127.') ||
       hostname === '0.0.0.0' ||
       hostname === '::1' ||
+      hostname.startsWith('[') || // any IPv6 literal (e.g. [::1], [::ffff:127.0.0.1]) — the intended bypass is the open redirect
+      hostname.endsWith('.localhost') ||
       hostname.startsWith('10.') ||
       hostname.startsWith('192.168.') ||
       /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname) ||

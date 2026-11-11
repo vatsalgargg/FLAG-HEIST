@@ -33,12 +33,20 @@ export const ADMIN_COOKIE_NAME = 'veyra_admin_session';
 
 const COOKIE_MAX_AGE_MS = 72 * 60 * 60 * 1000; // 72 hours
 
+// COOKIE_SECURE=false allows production mode over plain HTTP (e.g. a TryHackMe VM reached by IP).
+function secureCookies(): boolean {
+  const override = process.env.COOKIE_SECURE?.trim().toLowerCase();
+  if (override === 'true') return true;
+  if (override === 'false') return false;
+  return config.nodeEnv === 'production';
+}
+
 function getBaseCookieOptions(): CookieOptions {
   const isProduction = config.nodeEnv === 'production';
 
   return {
     httpOnly: true,
-    secure: isProduction, // HTTPS only in production
+    secure: secureCookies(), // HTTPS only in production unless COOKIE_SECURE overrides
     sameSite: 'lax',
     maxAge: COOKIE_MAX_AGE_MS,
   };
@@ -61,7 +69,7 @@ export function clearTeamCookie(res: Response): void {
   const isProduction = config.nodeEnv === 'production';
   res.clearCookie(TEAM_COOKIE_NAME, {
     httpOnly: true,
-    secure: isProduction,
+    secure: secureCookies(),
     sameSite: 'lax',
     path: '/',
   });
@@ -85,7 +93,7 @@ export function clearAdminCookie(res: Response): void {
   const isProduction = config.nodeEnv === 'production';
   res.clearCookie(ADMIN_COOKIE_NAME, {
     httpOnly: true,
-    secure: isProduction,
+    secure: secureCookies(),
     sameSite: 'lax',
     path: '/',
   });

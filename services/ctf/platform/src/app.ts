@@ -51,6 +51,8 @@ export function createApp(): Application {
   app.use('/artifacts/ch06', express.static(path.resolve(__dirname, '../../challenges/06-leaked-photo/artifacts')));
   app.use('/artifacts/ch08', express.static(path.resolve(__dirname, '../../challenges/08-internal-dashboard/artifacts')));
   app.use('/artifacts/ch11', express.static(path.resolve(__dirname, '../../challenges/11-debug-trace/artifacts')));
+  // The ch11 logs reference /artifacts/proc-core/<file>; serve that exact path too.
+  app.use('/artifacts/proc-core', express.static(path.resolve(__dirname, '../../challenges/11-debug-trace/artifacts/proc-core')));
 
   // 3. Mount API router
   app.use('/', routes);

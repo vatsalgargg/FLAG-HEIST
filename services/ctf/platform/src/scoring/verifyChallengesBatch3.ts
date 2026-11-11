@@ -1,3 +1,5 @@
+// Tests exercise challenges independently of unlock order.
+process.env.SEQUENTIAL_UNLOCK = 'false';
 /**
  * Acceptance Test Suite for Prompts H, I, J, K: Sandboxed Modules (Collab, 10, 12, 13)
  *

@@ -1,0 +1,6 @@
+2026-11-03T02:00:00Z INFO  backup-agent starting job nightly-config (agent v3.1.2)
+2026-11-03T02:00:01Z INFO  reading /srv/veyra/etc/gateway.d
+2026-11-03T02:00:03Z INFO  wrote system-config.json (1 file, 0.6 KiB)
+2026-11-03T02:00:03Z WARN  secrets/ excluded from public backup set by policy SEC-114
+2026-11-03T02:00:04Z INFO  upload to cold storage complete
+2026-11-03T02:00:04Z INFO  job nightly-config finished in 4.1s

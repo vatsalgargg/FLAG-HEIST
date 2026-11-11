@@ -90,7 +90,7 @@ export const challenges: Challenge[] = [
     narrative:
       "A photo surfaced during the breach investigation — shared as evidence in the incident timeline. But the image carries more data than what's visible to the eye.",
     briefing:
-      "Download the evidence image. What you see isn't all there is. Standard steganography tools can reveal what's embedded inside. Extract the hidden data.",
+      "Download the evidence image. What you see isn't all there is. Standard steganography tools can reveal what's embedded inside — but they may ask for a passphrase. Veyra staff reuse secrets: something you have already seen in this breach may unlock it.",
     hints: [],
     providedAssets: [
       { label: "leaked_office.jpg", href: "/artifacts/ch06/leaked_office.jpg" },

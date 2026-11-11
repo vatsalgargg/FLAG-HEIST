@@ -1,0 +1,6 @@
+snapshot_id,customer_id,period,records,checksum_sha1,status
+LS-20261102-01,2018,2026-10,1844,3f1b2c8e9a0d4e7f6b5a4c3d2e1f0a9b8c7d6e5f,verified
+LS-20261102-02,3055,2026-10,902,9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b,verified
+LS-20261102-03,4410,2026-10,5120,1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d,verified
+LS-20261102-04,5822,2026-10,611,7e6d5c4b3a2f1e0d9c8b7a6f5e4d3c2b1a0f9e8d,verified
+LS-20261102-05,7701,2026-10,2733,5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a,pending_review

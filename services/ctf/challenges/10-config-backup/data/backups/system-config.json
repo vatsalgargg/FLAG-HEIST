@@ -1,0 +1,18 @@
+{
+  "service": "veyra-backup-gateway",
+  "environment": "production",
+  "region": "us-east-1",
+  "generated_at": "2026-11-03T02:00:04Z",
+  "storage": {
+    "backup_root": "/srv/veyra/data/backups",
+    "retention_days": 30,
+    "compression": "zstd",
+    "encryption": "aes-256-gcm"
+  },
+  "schedules": [
+    { "name": "nightly-config", "cron": "0 2 * * *", "target": "system-config.json" },
+    { "name": "weekly-ledger", "cron": "0 3 * * 0", "target": "ledger-snapshot-2026-11-02.csv" }
+  ],
+  "vault_recovery_archive": "Emergency master encryption secret archived at ../secrets/recovery.vault",
+  "maintainer": "infra-backup@veyra.internal"
+}

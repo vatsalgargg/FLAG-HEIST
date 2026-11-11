@@ -17,6 +17,7 @@ type RemoteChallenge = {
   points: number;
   isActive: boolean;
   solved: boolean;
+  locked?: boolean;
   targetUrl: string | null;
   accessInfo: string | null;
   collabInfo: { callbackUrl: string; logUrl: string } | null;
@@ -36,7 +37,21 @@ type SolveStat = {
   solve_count: number;
   first_blood: { team_name: string } | null;
 };
+export type TaskState = "locked" | "open" | "solved";
+export interface TaskView {
+  index: number;
+  challenge: Challenge;
+  state: TaskState;
+  available: boolean;
+  accessInfo: string | null;
+  collabInfo: RemoteChallenge["collabInfo"];
+  revealedHints: number[];
+  stat?: SolveStat;
+}
 interface CTFContextValue {
+  tasks: TaskView[];
+  submitFor: (challengeId: number, flag: string) => Promise<{ success: boolean; message: string }>;
+  revealHintFor: (challengeId: number, hintIndex: number) => Promise<{ success: boolean; cost: number }>;
   team: {
     teamName: string;
     score: number;
@@ -109,29 +124,31 @@ export function CTFProvider({ children }: { children: ReactNode }) {
     const timer = setInterval(load, 15000);
     return () => clearInterval(timer);
   }, []);
-  const remote = dashboard?.challenges.find(
-    (ch) => ch.id === challenges[index].id,
-  );
-  const currentChallenge: Challenge = {
-    ...challenges[index],
-    points: remote?.points ?? challenges[index].points,
-    hints:
-      remote?.hints.map((h) => ({
-        id: h.id,
-        cost: h.cost,
-        text: h.content || "",
-      })) ?? [],
-    providedAssets: [
-      ...(challenges[index].providedAssets ?? []),
-      ...(remote?.targetUrl
-        ? [{ label: "Open challenge site", href: remote.targetUrl }]
-        : []),
-    ],
+  const remoteFor = (id: number) => dashboard?.challenges.find((ch) => ch.id === id);
+  const buildChallenge = (i: number): Challenge => {
+    const base = challenges[i];
+    const r = remoteFor(base.id);
+    const locked = r?.locked ?? false;
+    return {
+      ...base,
+      points: r?.points ?? base.points,
+      hints:
+        r?.hints.map((h) => ({ id: h.id, cost: h.cost, text: h.content || "" })) ?? [],
+      // Locked tasks never show downloads or target links.
+      providedAssets: locked
+        ? []
+        : [
+            ...(base.providedAssets ?? []),
+            ...(r?.targetUrl ? [{ label: "Open challenge site", href: r.targetUrl }] : []),
+          ],
+    };
   };
-  async function submitFlag(flag: string) {
+  const remote = remoteFor(challenges[index].id);
+  const currentChallenge: Challenge = buildChallenge(index);
+  async function submitFor(challengeId: number, flag: string) {
     try {
       const result = await api<{ status: string; message: string }>("/submit", {
-        challenge_id: currentChallenge.id,
+        challenge_id: challengeId,
         flag,
       });
       await refresh();
@@ -147,13 +164,15 @@ export function CTFProvider({ children }: { children: ReactNode }) {
       };
     }
   }
-  async function revealHint(hintIndex: number) {
-    const hint = remote?.hints[hintIndex];
+  async function revealHintFor(challengeId: number, hintIndex: number) {
+    const hint = remoteFor(challengeId)?.hints[hintIndex];
     if (!hint) return { success: false, cost: 0 };
     await api(`/hints/${hint.id}/reveal`, {});
     await refresh();
     return { success: true, cost: hint.cost };
   }
+  const submitFlag = (flag: string) => submitFor(currentChallenge.id, flag);
+  const revealHint = (hintIndex: number) => revealHintFor(currentChallenge.id, hintIndex);
   if (!dashboard)
     return (
       <PlatformShell
@@ -187,9 +206,27 @@ export function CTFProvider({ children }: { children: ReactNode }) {
     .flatMap((ch) => ch.hints)
     .filter((h) => h.revealed)
     .reduce((sum, h) => sum + h.cost, 0);
+  const tasks: TaskView[] = challenges.map((base, i) => {
+    const r = remoteFor(base.id);
+    const solved = solvedChallenges.has(base.id);
+    const locked = solved ? false : (r?.locked ?? i > unlockedIndex);
+    return {
+      index: i,
+      challenge: buildChallenge(i),
+      state: solved ? "solved" : locked ? "locked" : "open",
+      available: r?.isActive ?? false,
+      accessInfo: locked ? null : (r?.accessInfo ?? null),
+      collabInfo: locked ? null : (r?.collabInfo ?? null),
+      revealedHints: r?.hints.flatMap((h, hi) => (h.revealed ? [hi] : [])) ?? [],
+      stat: stats.find((s) => s.challenge_id === base.id),
+    };
+  });
   return (
     <CTFContext.Provider
       value={{
+        tasks,
+        submitFor,
+        revealHintFor,
         team: {
           ...dashboard.team,
           currentChallengeIndex: index,

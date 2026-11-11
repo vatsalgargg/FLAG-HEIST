@@ -122,6 +122,22 @@ export function createChallenge12App(): Application {
     }
   });
 
+  // ── Landing page: shows the tool and how it is called ────────────────────────
+  app.get('/', (_req: Request, res: Response) => {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(`<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><title>Veyra Diagnostics Probe</title>
+<style>body{font-family:monospace;background:#0b0f19;color:#e2e8f0;max-width:720px;margin:3rem auto;padding:0 1rem}
+h1{color:#38bdf8;font-size:1.4rem}input{width:100%;box-sizing:border-box;background:#111827;border:1px solid #334155;color:#fff;padding:.7rem;margin:.5rem 0}
+button{background:#0284c7;color:#fff;border:0;padding:.7rem 1.2rem;cursor:pointer}pre{background:#111827;padding:1rem;border:1px solid #1e293b;white-space:pre-wrap}</style></head>
+<body><h1>Veyra Diagnostics Probe</h1>
+<p>Checks whether an internal host is reachable. Results are recorded internally; the probe only confirms dispatch.</p>
+<form id="f"><label>Target hostname or IP<input name="target" placeholder="10.0.0.1"></label><button>Run check</button></form>
+<pre id="out">API: POST /api/diagnostics/check  {"target": "&lt;host&gt;"}</pre>
+<script>document.getElementById('f').onsubmit=async e=>{e.preventDefault();const r=await fetch('/api/diagnostics/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({target:e.target.target.value})});document.getElementById('out').textContent=JSON.stringify(await r.json(),null,2)}</script>
+</body></html>`);
+  });
+
   // ── 3. Diagnostic Probe Endpoint (Blind Execution) ───────────────────────────
   const runDiagnosticProbe = (req: Request, res: Response) => {
     const { target } = req.body || {};

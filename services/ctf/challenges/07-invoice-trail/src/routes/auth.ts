@@ -45,7 +45,8 @@ router.post(['/login', '/api/auth/login'], (req: Request, res: Response) => {
 
   res.cookie(SESSION_COOKIE_NAME, sessionCookie, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    // COOKIE_SECURE=false lets the portal run over plain HTTP (e.g. a TryHackMe machine IP)
+    secure: process.env.COOKIE_SECURE ? process.env.COOKIE_SECURE === 'true' : process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     maxAge: 72 * 60 * 60 * 1000, // 72 hours
     path: '/',

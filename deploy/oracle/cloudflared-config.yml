@@ -1,0 +1,29 @@
+# Copy to /etc/cloudflared/config.yml on the server.
+# Replace TUNNEL_ID and yourdomain.com.
+tunnel: TUNNEL_ID
+credentials-file: /etc/cloudflared/TUNNEL_ID.json
+
+ingress:
+  - hostname: ctf.yourdomain.com
+    service: http://127.0.0.1:3000
+  - hostname: collab.yourdomain.com
+    service: http://127.0.0.1:8182
+  - hostname: ch01.yourdomain.com
+    service: http://127.0.0.1:3101
+  - hostname: ch03.yourdomain.com
+    service: http://127.0.0.1:3103
+  - hostname: ch04.yourdomain.com
+    service: http://127.0.0.1:3104
+  - hostname: ch05.yourdomain.com
+    service: http://127.0.0.1:3105
+  - hostname: ch07.yourdomain.com
+    service: http://127.0.0.1:3107
+  - hostname: ch09.yourdomain.com
+    service: http://127.0.0.1:3109
+  - hostname: ch10.yourdomain.com
+    service: http://127.0.0.1:3110
+  - hostname: ch12.yourdomain.com
+    service: http://127.0.0.1:3112
+  - hostname: ch13.yourdomain.com
+    service: http://127.0.0.1:3113
+  - service: http_status:404

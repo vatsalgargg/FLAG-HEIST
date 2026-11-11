@@ -1,0 +1,14 @@
+[Unit]
+Description=Flag Heist: set machine IP and start all challenge services
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/opt/flagheist/deploy/tryhackme/flagheist-boot.sh
+TimeoutStartSec=600
+
+[Install]
+WantedBy=multi-user.target

@@ -25,6 +25,7 @@ import { eq } from 'drizzle-orm';
 import { db, challenges, solves } from '../db';
 import { config } from '../config';
 import { computeFlagHash } from '../scoring/flags';
+import { isChallengeUnlockedForTeam } from '../scoring/calculate';
 import { appendScoreEvent } from '../scoring/recordScoreEvent';
 import { deleteCacheKey, redis } from '../cache';
 import { rebuildLeaderboardCache } from '../cache/leaderboard';
@@ -91,6 +92,14 @@ submitRouter.post('/', requireNotMaintenanceMode, requireTeamAuth, submitLimiter
       return res.status(400).json({
         error: 'ChallengeInactive',
         message: `Challenge #${challengeId} ("${challenge.name}") is temporarily deactivated. Flag submissions are paused.`,
+      });
+    }
+
+    // 3b. Sequential unlock: earlier challenges must be solved first
+    if (!(await isChallengeUnlockedForTeam(teamId, challenge.id))) {
+      return res.status(403).json({
+        error: 'ChallengeLocked',
+        message: 'Solve the previous task first to unlock this one.',
       });
     }
 

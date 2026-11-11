@@ -1,0 +1,18 @@
+[Unit]
+Description=Flag Heist mission console (Next.js) on port 80
+After=flagheist-boot.service
+Requires=flagheist-boot.service
+
+[Service]
+User=flagheist
+WorkingDirectory=/opt/flagheist
+Environment=NODE_ENV=production
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+NoNewPrivileges=true
+ExecStart=/usr/bin/node node_modules/next/dist/bin/next start -H 0.0.0.0 -p 80
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

@@ -1,3 +1,5 @@
+// Tests exercise challenges independently of unlock order.
+process.env.SEQUENTIAL_UNLOCK = 'false';
 /**
  * Acceptance Test Suite for Prompt 7: Content Batch 1 (8 Challenges)
  *

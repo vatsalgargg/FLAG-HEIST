@@ -12,29 +12,31 @@ x-platform-env: &platform-env
   ADMIN_SEED_PASSWORD: ${ADMIN_SEED_PASSWORD:-local-organiser-password}
   PLATFORM_ORIGIN: ${PLATFORM_ORIGIN:-http://localhost:3000}
   TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-}
+  SEQUENTIAL_UNLOCK: ${SEQUENTIAL_UNLOCK:-true}
+  COOKIE_SECURE: ${COOKIE_SECURE:-}
   SENTRY_DSN: ${SENTRY_DSN:-}
   COLLAB_URL: http://collab:8082
-  COLLAB_PUBLIC_URL: http://localhost:${CTF_COLLAB_PORT:-8182}
+  COLLAB_PUBLIC_URL: ${COLLAB_PUBLIC_URL:-http://localhost:${CTF_COLLAB_PORT:-8182}}
   COLLAB_CALLBACK_URL: http://collab:8082
-  CHALLENGE_01_PUBLIC_URL: http://localhost:${CTF_CH01_PORT:-3101}
+  CHALLENGE_01_PUBLIC_URL: ${CHALLENGE_01_PUBLIC_URL:-http://localhost:${CTF_CH01_PORT:-3101}}
   CHALLENGE_01_URL: http://challenge01:3001
   CHALLENGE_03_URL: http://challenge03:3003
-  CHALLENGE_03_TWITTER_URL: http://localhost:${CTF_CH03_PORT:-3103}
-  CHALLENGE_04_PUBLIC_URL: http://localhost:${CTF_CH04_PORT:-3104}
+  CHALLENGE_03_TWITTER_URL: ${CHALLENGE_03_TWITTER_URL:-http://localhost:${CTF_CH03_PORT:-3103}}
+  CHALLENGE_04_PUBLIC_URL: ${CHALLENGE_04_PUBLIC_URL:-http://localhost:${CTF_CH04_PORT:-3104}}
   CHALLENGE_04_URL: http://challenge04:3004
-  CHALLENGE_05_PUBLIC_URL: http://localhost:${CTF_CH05_PORT:-3105}
+  CHALLENGE_05_PUBLIC_URL: ${CHALLENGE_05_PUBLIC_URL:-http://localhost:${CTF_CH05_PORT:-3105}}
   CHALLENGE_05_URL: http://challenge05:3005
-  CHALLENGE_07_PUBLIC_URL: http://localhost:${CTF_CH07_PORT:-3107}
+  CHALLENGE_07_PUBLIC_URL: ${CHALLENGE_07_PUBLIC_URL:-http://localhost:${CTF_CH07_PORT:-3107}}
   CHALLENGE_07_URL: http://challenge07:3007
-  CHALLENGE_08_PUBLIC_URL: http://localhost:${CTF_CH07_PORT:-3107}
+  CHALLENGE_08_PUBLIC_URL: ${CHALLENGE_08_PUBLIC_URL:-http://localhost:${CTF_CH07_PORT:-3107}}
   CHALLENGE_08_URL: http://challenge07:3007
-  CHALLENGE_09_PUBLIC_URL: http://localhost:${CTF_CH09_PORT:-3109}
+  CHALLENGE_09_PUBLIC_URL: ${CHALLENGE_09_PUBLIC_URL:-http://localhost:${CTF_CH09_PORT:-3109}}
   CHALLENGE_09_URL: http://challenge09:3009
-  CHALLENGE_10_PUBLIC_URL: http://localhost:${CTF_CH10_PORT:-3110}
+  CHALLENGE_10_PUBLIC_URL: ${CHALLENGE_10_PUBLIC_URL:-http://localhost:${CTF_CH10_PORT:-3110}}
   CHALLENGE_10_URL: http://challenge10:3010
-  CHALLENGE_12_PUBLIC_URL: http://localhost:${CTF_CH12_PORT:-3112}
+  CHALLENGE_12_PUBLIC_URL: ${CHALLENGE_12_PUBLIC_URL:-http://localhost:${CTF_CH12_PORT:-3112}}
   CHALLENGE_12_URL: http://challenge12:3012
-  CHALLENGE_13_PUBLIC_URL: http://localhost:${CTF_CH13_PORT:-3113}
+  CHALLENGE_13_PUBLIC_URL: ${CHALLENGE_13_PUBLIC_URL:-http://localhost:${CTF_CH13_PORT:-3113}}
   CHALLENGE_13_URL: http://challenge13:3013
 x-target: &target
   restart: unless-stopped
@@ -62,7 +64,7 @@ services:
     <<: *target
     container_name: flagheist-collab
     build: ./services/ctf/collab
-    ports: ["127.0.0.1:${CTF_COLLAB_PORT:-8182}:8082"]
+    ports: ["${CTF_BIND_ADDR:-127.0.0.1}:${CTF_COLLAB_PORT:-8182}:8082"]
     environment:
       RESET_TOKEN: ${RESET_TOKEN:-local-reset-key-change-before-production-0003}
   challenge01:
@@ -72,7 +74,7 @@ services:
       PORT: 3001
       CHALLENGE_ID: 1
       RESET_TOKEN: ${RESET_TOKEN:-local-reset-key-change-before-production-0003}
-    ports: ["127.0.0.1:${CTF_CH01_PORT:-3101}:3001"]
+    ports: ["${CTF_BIND_ADDR:-127.0.0.1}:${CTF_CH01_PORT:-3101}:3001"]
     volumes: [./services/ctf/challenges/01-staging-site/public:/public:ro]
     read_only: true
   challenge03:
@@ -82,34 +84,37 @@ services:
       PORT: 3003
       CHALLENGE_ID: 3
       RESET_TOKEN: ${RESET_TOKEN:-local-reset-key-change-before-production-0003}
-    ports: ["127.0.0.1:${CTF_CH03_PORT:-3103}:3003"]
+    ports: ["${CTF_BIND_ADDR:-127.0.0.1}:${CTF_CH03_PORT:-3103}:3003"]
     volumes: [./services/ctf/challenges/03-twitter-trail/public:/public:ro]
     read_only: true
   challenge04:
     <<: *target
     build: ./services/ctf/challenges/04-employee-portal
-    ports: ["127.0.0.1:${CTF_CH04_PORT:-3104}:3004"]
+    ports: ["${CTF_BIND_ADDR:-127.0.0.1}:${CTF_CH04_PORT:-3104}:3004"]
     read_only: true
     environment:
       RESET_TOKEN: ${RESET_TOKEN:-local-reset-key-change-before-production-0003}
+      PORTAL_SESSION_SECRET: ${CH04_SESSION_SECRET:-veyra-portal-secret-key-32b}
   challenge05:
     <<: *target
     build: ./services/ctf/challenges/05-who-is-ethan-cole
-    ports: ["127.0.0.1:${CTF_CH05_PORT:-3105}:3005"]
+    ports: ["${CTF_BIND_ADDR:-127.0.0.1}:${CTF_CH05_PORT:-3105}:3005"]
     read_only: true
     environment:
       RESET_TOKEN: ${RESET_TOKEN:-local-reset-key-change-before-production-0003}
   challenge07:
     <<: *target
     build: ./services/ctf/challenges/07-invoice-trail
-    ports: ["127.0.0.1:${CTF_CH07_PORT:-3107}:3007"]
+    ports: ["${CTF_BIND_ADDR:-127.0.0.1}:${CTF_CH07_PORT:-3107}:3007"]
     environment:
       RESET_TOKEN: ${RESET_TOKEN:-local-reset-key-change-before-production-0003}
+      PORTAL_SESSION_SECRET: ${CH07_SESSION_SECRET:-veyra-portal-secret-key-audit-2026}
+      COOKIE_SECURE: ${COOKIE_SECURE:-}
     volumes: [portal_data:/app/data]
   challenge09:
     <<: *target
     build: ./services/ctf/challenges/09-session-bug
-    ports: ["127.0.0.1:${CTF_CH09_PORT:-3109}:3009"]
+    ports: ["${CTF_BIND_ADDR:-127.0.0.1}:${CTF_CH09_PORT:-3109}:3009"]
     read_only: true
     environment:
       RESET_TOKEN: ${RESET_TOKEN:-local-reset-key-change-before-production-0003}
@@ -136,7 +141,7 @@ services:
       args: { CHALLENGE_DIR: 13-admin-coverup }
   challenge10:
     build: { context: ./services/ctf/sandbox, dockerfile: gateway.Dockerfile }
-    ports: ["127.0.0.1:${CTF_CH10_PORT:-3110}:3010"]
+    ports: ["${CTF_BIND_ADDR:-127.0.0.1}:${CTF_CH10_PORT:-3110}:3010"]
     environment:
       CHALLENGE_ID: 10
       RESET_TOKEN: ${RESET_TOKEN:-local-reset-key-change-before-production-0003}
@@ -145,7 +150,7 @@ services:
     pids_limit: 64
   challenge12:
     build: { context: ./services/ctf/sandbox, dockerfile: gateway.Dockerfile }
-    ports: ["127.0.0.1:${CTF_CH12_PORT:-3112}:3012"]
+    ports: ["${CTF_BIND_ADDR:-127.0.0.1}:${CTF_CH12_PORT:-3112}:3012"]
     environment:
       CHALLENGE_ID: 12
       RESET_TOKEN: ${RESET_TOKEN:-local-reset-key-change-before-production-0003}
@@ -155,7 +160,7 @@ services:
     pids_limit: 64
   challenge13:
     build: { context: ./services/ctf/sandbox, dockerfile: gateway.Dockerfile }
-    ports: ["127.0.0.1:${CTF_CH13_PORT:-3113}:3013"]
+    ports: ["${CTF_BIND_ADDR:-127.0.0.1}:${CTF_CH13_PORT:-3113}:3013"]
     environment:
       CHALLENGE_ID: 13
       RESET_TOKEN: ${RESET_TOKEN:-local-reset-key-change-before-production-0003}

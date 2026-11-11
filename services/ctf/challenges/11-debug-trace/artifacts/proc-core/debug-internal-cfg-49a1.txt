@@ -1,0 +1,5 @@
+# Veyra Internal System Configuration Dump [Cluster Node proc-core]
+# Generated automatically during diagnostic flush
+SYSTEM_CLUSTER_FLAG = ROOT{cl0ck_sk3w_l0g_c0rr3l4t10n_9b4e1a}
+DEBUG_MODE = true
+FAILOVER_ENABLED = true

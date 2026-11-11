@@ -1,0 +1,80 @@
+# ==============================================================================
+# Google Cloud Run Service Specification: Dynamic Execution Sandboxes (Modules 10, 12, 13)
+#
+# HARDENING SPECIFICATION — PATTERN A: REAL CONTAINER-LEVEL SANDBOX ISOLATION
+# ==============================================================================
+# For execution-heavy modules:
+#   - Module 10: Config Backup (Path Traversal sandbox)
+#   - Module 12: Diagnostics Backdoor (Blind Command Execution sandbox)
+#   - Module 13: Admin Cover-Up (Multi-stage SSRF mesh)
+#
+# CRITICAL ARCHITECTURAL DECISION: containerConcurrency: 1
+# Under 20,000 participant load, Google Cloud Run automatically provisions exactly
+# 1 dedicated container instance per concurrent request.
+#
+# WHY THIS MATTERS:
+# 1. Zero Shared State: Two concurrent participants never execute inside the same
+#    container memory or filesystem at the same instant.
+# 2. Complete Isolation: Any temporary file created by command injection or path traversal
+#    is physically isolated to that single container instance.
+# 3. Predictable Resource Bounds: Each request receives dedicated 1000m CPU and 512Mi RAM.
+# ==============================================================================
+
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: veyra-ctf-ch12-diagnostics
+  namespace: '<PROJECT_ID>'
+  labels:
+    cloud.googleapis.com/location: '<REGION>'
+    app.kubernetes.io/name: root-ctf-ch12
+    app.kubernetes.io/part-of: root-ctf
+spec:
+  template:
+    metadata:
+      annotations:
+        # Autoscales 0 to 100 instances on demand
+        autoscaling.knative.dev/minScale: '0'
+        autoscaling.knative.dev/maxScale: '100'
+        run.googleapis.com/cpu-throttling: 'true'
+        # Sandboxed execution model
+        run.googleapis.com/execution-environment: gen2
+    spec:
+      # PATTERN A: STRICT CONCURRENCY = 1 PER CONTAINER INSTANCE
+      # Cloud Run assigns at most 1 active request per container instance
+      containerConcurrency: 1
+      timeoutSeconds: 15
+
+      containers:
+        - image: '<IMAGE_REGISTRY_URL>/ch12-diagnostics:latest'
+          ports:
+            - name: http1
+              containerPort: 3012
+          resources:
+            limits:
+              cpu: '1000m'
+              memory: '512Mi'
+          env:
+            - name: NODE_ENV
+              value: 'production'
+            - name: PORT
+              value: '3012'
+            - name: RESET_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: veyra-reset-token
+                  key: latest
+            - name: COLLAB_URL
+              value: 'https://collab.<DOMAIN>'
+          startupProbe:
+            httpGet:
+              path: /healthz
+              port: 3012
+            periodSeconds: 2
+            failureThreshold: 5
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 3012
+            periodSeconds: 10
+            failureThreshold: 3

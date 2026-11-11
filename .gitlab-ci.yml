@@ -1,0 +1,72 @@
+stages: [verify, package, staging, production]
+variables:
+  SQLITE_PATH: /tmp/flagheist-ci.db
+  REDIS_URL: redis://redis:6379
+  RESET_TOKEN: ci-reset-token-for-verification
+verify:
+  image: node:22
+  stage: verify
+  services:
+    - name: redis:7-alpine
+      alias: redis
+  script:
+    - npm ci
+    - npm ci --prefix services/ctf/platform
+    - npm run lint
+    - npm run build
+    - npm run build --prefix services/ctf/platform
+    - NODE_ENV=test npm run db:migrate
+    - NODE_ENV=test npm run db:seed
+    - NODE_ENV=test npm test --prefix services/ctf/platform
+    - npm run test:origin --prefix services/ctf/platform
+    - NODE_ENV=test npm run test:guards --prefix services/ctf/platform
+    - NODE_ENV=test npm run test:scoring --prefix services/ctf/platform
+    - NODE_ENV=test npm run test:admin --prefix services/ctf/platform
+    - NODE_ENV=test npm run db:seed
+    - NODE_ENV=development PORT=8080 npm run api:dev > /tmp/api.log 2>&1 &
+    - node scripts/wait-for-http.mjs http://localhost:8080/healthz
+    - CTF_TEST_LOCAL_DB=1 CTF_TEST_BASE_URL=http://localhost:8080 ADMIN_SEED_PASSWORD=admin123 npm run test:integration
+package:
+  image: docker:29-cli
+  stage: package
+  services: [docker:29-dind]
+  variables:
+    DOCKER_HOST: tcp://docker:2375
+    DOCKER_TLS_CERTDIR: ""
+  script:
+    - docker compose --profile images build
+    - docker compose up -d --wait --wait-timeout 180
+    - apk add --no-cache nodejs
+    - node scripts/verify-restore.mjs
+    - docker compose exec -T platform node -e 'fetch("http://localhost:8080/healthz").then(r=>{if(!r.ok)process.exit(1)})'
+  after_script:
+    - docker compose logs --no-color > services.log
+    - docker compose down -v
+  artifacts:
+    when: always
+    paths: [services.log]
+deploy_staging:
+  image: node:22
+  stage: staging
+  when: manual
+  environment: staging
+  rules:
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $STAGING_DEPLOY_HOST"
+      when: manual
+  before_script:
+    - apt-get update -qq && apt-get install -y openssh-client
+  script:
+    - DEPLOY_HOST="$STAGING_DEPLOY_HOST" DEPLOY_PATH="$STAGING_DEPLOY_PATH" node scripts/deploy.mjs
+  needs: [verify, package]
+deploy_production:
+  image: node:22
+  stage: production
+  environment: production
+  rules:
+    - if: "$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $PRODUCTION_DEPLOY_HOST"
+      when: manual
+  before_script:
+    - apt-get update -qq && apt-get install -y openssh-client
+  script:
+    - DEPLOY_HOST="$PRODUCTION_DEPLOY_HOST" DEPLOY_PATH="$PRODUCTION_DEPLOY_PATH" node scripts/deploy.mjs
+  needs: [deploy_staging]

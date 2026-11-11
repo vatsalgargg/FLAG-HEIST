@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veyra Cloud Solutions — Audit & Operations Portal</title>
+  <style>
+    :root {
+      --bg-primary: #0a0e17;
+      --bg-secondary: #131b2e;
+      --bg-card: #1a233a;
+      --border-color: #273553;
+      --accent-red: #d32f2f;
+      --text-main: #e2e8f0;
+      --text-muted: #94a3b8;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg-primary);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+    .brand-badge {
+      background: var(--accent-red);
+      color: white;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+    }
+
+    .user-status {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+    .user-pill {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      color: var(--text-main);
+      font-weight: 500;
+    }
+
+    /* Login Overlay */
+    #login-view {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .login-box {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+    .login-box h2 {
+      margin-bottom: 0.5rem;
+      font-size: 1.5rem;
+    }
+    .login-box p {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      margin-bottom: 1.5rem;
+    }
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+    .form-group input {
+      width: 100%;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--accent-red);
+    }
+    .btn {
+      display: inline-block;
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: var(--accent-red);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: background 0.15s ease;
+    }
+    .btn:hover { background: #b71c1c; }
+    .btn-secondary {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      width: auto;
+      padding: 0.5rem 1rem;
+      font-size: 0.85rem;
+    }
+    .btn-secondary:hover { background: #273553; }
+
+    /* Dashboard Layout */
+    #dashboard-view {
+      display: none;
+      flex: 1;
+      display: flex;
+    }
+    .sidebar {
+      width: 260px;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-color);
+      padding: 1.5rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-radius: 6px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+    .nav-item:hover {
+      background: var(--bg-card);
+      color: var(--text-main);
+    }
+    .nav-item.active {
+      background: #273553;
+      color: white;
+      font-weight: 600;
+      border-left: 3px solid var(--accent-red);
+    }
+
+    .main-content {
+      flex: 1;
+      padding: 2rem 2.5rem;
+      overflow-y: auto;
+    }
+
+    .panel-header {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1rem;
+    }
+    .panel-header h1 {
+      font-size: 1.75rem;
+      margin-bottom: 0.25rem;
+    }
+    .panel-header p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* Card & Table */
+    .card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .table-container {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.875rem;
+    }
+    th {
+      background: var(--bg-card);
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+    td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .code-id {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: #38bdf8;
+    }
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-paid { background: rgba(16, 185, 129, 0.2); color: #34d399; }
+    .badge-disputed { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+
+    /* Alert / Error Banner */
+    .access-denied-banner {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 8px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      color: #fca5a5;
+    }
+    .access-denied-banner h3 {
+      color: #ef4444;
+      font-size: 1.1rem;
+    }
+
+    .memo-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+    .memo-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .memo-title {
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-main);
+    }
+    .memo-content {
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <span>VEYRA CLOUD</span>
+      <span class="brand-badge">INTERNAL PORTAL</span>
+    </div>
+    <div class="user-status" id="header-user-status" style="display: none;">
+      <span>Signed in as:</span>
+      <span class="user-pill" id="header-username">priya.nair</span>
+      <span class="badge" style="background: #273553; color: #94a3b8;">Auditor</span>
+      <button class="btn btn-secondary" onclick="logout()">Sign Out</button>
+    </div>
+  </header>
+
+  <!-- Login View -->
+  <div id="login-view">
+    <div class="login-box">
+      <h2>Auditor Authentication</h2>
+      <p>Authorized Veyra personnel access only. Audit activities are monitored.</p>
+      <div id="login-error" style="display: none; color: #ef4444; margin-bottom: 1rem; font-size: 0.85rem;"></div>
+      <form onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>Employee Username</label>
+          <input type="text" id="username" value="priya.nair" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label>Audit Password</label>
+          <input type="password" id="password" value="Veyra#Audit26" required autocomplete="current-password">
+        </div>
+        <button type="submit" class="btn">Authenticate</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Dashboard View -->
+  <div id="dashboard-view">
+    <div class="sidebar">
+      <div class="nav-item active" onclick="switchTab('invoices')">
+        <span>📄</span> My Invoices
+      </div>
+      <div class="nav-item" onclick="switchTab('memos')">
+        <span>📋</span> Audit Memos
+      </div>
+      <div class="nav-item" onclick="switchTab('billing')">
+        <span>💳</span> Corporate Billing
+      </div>
+      <div class="nav-item" onclick="switchTab('reporting')">
+        <span>📊</span> Reporting Exports
+      </div>
+      <div class="nav-item" onclick="switchTab('users')">
+        <span>👥</span> User Directory
+      </div>
+    </div>
+
+    <div class="main-content">
+      <!-- Invoices Tab -->
+      <div id="tab-invoices" class="tab-pane">
+        <div class="panel-header">
+          <h1>Internal Department Invoices</h1>
+          <p>Auditor Ledger Overview for Department Account 1042 (Priya Nair)</p>
+        </div>
+
+        <div class="card">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Invoice ID</th>
+                  <th>Seq</th>
+                  <th>Amount</th>
+                  <th>Issued Date</th>
+                  <th>Description</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="invoices-tbody">
+                <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">Loading invoices...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 style="margin-bottom: 0.75rem;">Audit Invoice Ledger Inspector</h3>
+          <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">
+            Retrieve specific invoice record by encoded Ledger ID.
+          </p>
+          <div style="display: flex; gap: 0.5rem; max-width: 500px;">
+            <input type="text" id="inspect-input" placeholder="e.g. INV-55DACE" style="flex: 1; background: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-main); padding: 0.5rem 0.75rem; border-radius: 6px; font-family: var(--font-mono);">
+            <button class="btn btn-secondary" onclick="inspectInvoice()">Inspect</button>
+          </div>
+          <div id="inspect-result" style="margin-top: 1rem;"></div>
+        </div>
+      </div>
+
+      <!-- Audit Memos Tab -->
+      <div id="tab-memos" class="tab-pane" style="display: none;">
+        <div class="panel-header">
+          <h1>Internal Audit & Escalation Memos</h1>
+          <p>Active compliance alerts and account escalation notices.</p>
+        </div>
+        <div id="memos-container">
+          <p style="color: var(--text-muted);">Loading audit memos...</p>
+        </div>
+      </div>
+
+      <!-- Billing Tab (Protected) -->
+      <div id="tab-billing" class="tab-pane" style="display: none;">
+        <div class="panel-header">
+          <h1>Corporate Billing & Treasury</h1>
+          <p>Enterprise revenue operations.</p>
+        </div>
+        <div id="billing-container"></div>
+      </div>
+
+      <!-- Reporting Tab (Protected) -->
+      <div id="tab-reporting" class="tab-pane" style="display: none;">
+        <div class="panel-header">
+          <h1>Reporting & Exports</h1>
+          <p>Quarterly corporate financial analytics.</p>
+        </div>
+        <div id="reporting-container"></div>
+      </div>
+
+      <!-- Users Tab (Protected) -->
+      <div id="tab-users" class="tab-pane" style="display: none;">
+        <div class="panel-header">
+          <h1>User & Personnel Directory</h1>
+          <p>Enterprise identity management.</p>
+        </div>
+        <div id="users-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function checkAuth() {
+      try {
+        const res = await fetch('/api/auth/me', { credentials: 'include' });
+        if (res.ok) {
+          const data = await res.json();
+          showDashboard(data.user);
+        } else {
+          showLogin();
+        }
+      } catch {
+        showLogin();
+      }
+    }
+
+    function showLogin() {
+      document.getElementById('login-view').style.display = 'flex';
+      document.getElementById('dashboard-view').style.display = 'none';
+      document.getElementById('header-user-status').style.display = 'none';
+    }
+
+    function showDashboard(user) {
+      document.getElementById('login-view').style.display = 'none';
+      document.getElementById('dashboard-view').style.display = 'flex';
+      document.getElementById('header-user-status').style.display = 'flex';
+      document.getElementById('header-username').textContent = user.username;
+      loadInvoices();
+      loadMemos();
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('username').value.trim();
+      const p = document.getElementById('password').value.trim();
+      const errEl = document.getElementById('login-error');
+      errEl.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ username: u, password: p })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          showDashboard(data.user);
+        } else {
+          errEl.textContent = data.message || 'Authentication failed';
+          errEl.style.display = 'block';
+        }
+      } catch (err) {
+        errEl.textContent = 'Server connection error';
+        errEl.style.display = 'block';
+      }
+    }
+
+    async function logout() {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+      showLogin();
+    }
+
+    function switchTab(tabName) {
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(el => el.style.display = 'none');
+
+      const targetNav = Array.from(document.querySelectorAll('.nav-item')).find(el => el.textContent.toLowerCase().includes(tabName));
+      if (targetNav) targetNav.classList.add('active');
+
+      const pane = document.getElementById('tab-' + tabName);
+      if (pane) pane.style.display = 'block';
+
+      if (tabName === 'billing') loadProtected('/api/billing/summary', 'billing-container', 'billing_admin');
+      if (tabName === 'reporting') loadProtected('/api/reporting/exports', 'reporting-container', 'analytics_admin');
+      if (tabName === 'users') loadProtected('/api/users/directory', 'users-container', 'user_admin');
+    }
+
+    async function loadInvoices() {
+      const tbody = document.getElementById('invoices-tbody');
+      try {
+        const res = await fetch('/api/my-invoices', { credentials: 'include' });
+        const data = await res.json();
+        if (res.ok && data.invoices) {
+          tbody.innerHTML = data.invoices.map(inv => `
+            <tr>
+              <td><span class="code-id">${inv.invoice_id}</span></td>
+              <td>#${inv.invoice_num}</td>
+              <td>$${Number(inv.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
+              <td>${inv.issued_at}</td>
+              <td>${inv.description}</td>
+              <td><span class="badge badge-${inv.status}">${inv.status.toUpperCase()}</span></td>
+            </tr>
+          `).join('');
+        }
+      } catch {
+        tbody.innerHTML = '<tr><td colspan="6" style="color: #ef4444;">Error loading invoices</td></tr>';
+      }
+    }
+
+    async function inspectInvoice() {
+      const id = document.getElementById('inspect-input').value.trim();
+      const resultDiv = document.getElementById('inspect-result');
+      if (!id) return;
+
+      resultDiv.innerHTML = '<p style="color: var(--text-muted);">Querying billing ledger...</p>';
+      try {
+        const res = await fetch('/api/invoices/' + encodeURIComponent(id), { credentials: 'include' });
+        const data = await res.json();
+        if (res.ok && data.invoice) {
+          const inv = data.invoice;
+          resultDiv.innerHTML = `
+            <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 6px; padding: 1rem;">
+              <p><strong>Ledger ID:</strong> <span class="code-id">${inv.invoiceId}</span></p>
+              <p><strong>Account:</strong> ${inv.customerName} (${inv.company}) [ID: ${inv.customerId}]</p>
+              <p><strong>Amount:</strong> $${Number(inv.amount).toLocaleString('en-US', { minimumFractionDigits: 2 })}</p>
+              <p><strong>Issued:</strong> ${inv.issuedAt}</p>
+              <p><strong>Details:</strong> ${inv.description}</p>
+              ${inv.flag ? `<p style="margin-top: 0.5rem; color: #10b981; font-weight: bold; font-family: var(--font-mono);">Security Token: ${inv.flag}</p>` : ''}
+            </div>
+          `;
+        } else {
+          resultDiv.innerHTML = `<p style="color: #ef4444;">${data.message || 'Invoice not found'}</p>`;
+        }
+      } catch {
+        resultDiv.innerHTML = '<p style="color: #ef4444;">Connection error inspecting invoice</p>';
+      }
+    }
+
+    async function loadMemos() {
+      const container = document.getElementById('memos-container');
+      try {
+        const res = await fetch('/api/audit/memos', { credentials: 'include' });
+        const data = await res.json();
+        if (res.ok && data.memos) {
+          container.innerHTML = data.memos.map(m => `
+            <div class="memo-item">
+              <div class="memo-header">
+                <span>Author: ${m.author}</span>
+                <span>${new Date(m.created_at).toLocaleDateString()}</span>
+              </div>
+              <div class="memo-title">${m.title}</div>
+              <div class="memo-content">${m.content}</div>
+            </div>
+          `).join('');
+        }
+      } catch {
+        container.innerHTML = '<p style="color: #ef4444;">Error loading audit memos</p>';
+      }
+    }
+
+    async function loadProtected(endpoint, containerId, roleName) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '<p style="color: var(--text-muted);">Verifying role permissions...</p>';
+      try {
+        const res = await fetch(endpoint, { credentials: 'include' });
+        const data = await res.json();
+        if (!res.ok) {
+          container.innerHTML = `
+            <div class="access-denied-banner">
+              <h3>HTTP 403 Forbidden</h3>
+              <p>${data.message || 'Access Denied: Insufficient permissions'}</p>
+              <p style="font-size: 0.8rem; color: #94a3b8;">Permission required: ${roleName}. Contact corporate security to request an elevation grant.</p>
+            </div>
+          `;
+        } else {
+          container.innerHTML = `<pre style="background: var(--bg-card); padding: 1rem; border-radius: 6px; overflow-x: auto;">${JSON.stringify(data, null, 2)}</pre>`;
+        }
+      } catch {
+        container.innerHTML = '<p style="color: #ef4444;">Connection error</p>';
+      }
+    }
+
+    // Initialize
+    checkAuth();
+  </script>
+</body>
+</html>

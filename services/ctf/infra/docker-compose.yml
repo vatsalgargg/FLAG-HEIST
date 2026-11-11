@@ -1,0 +1,81 @@
+# ==============================================================================
+# LOCAL DEVELOPMENT DOCKER COMPOSE CONFIGURATION
+#
+# WARNING: FOR LOCAL DEVELOPMENT ONLY!
+# ------------------------------------------------------------------------------
+# This docker-compose configuration spins up local PostgreSQL and Redis containers
+# exclusively for local testing, rapid iteration, and development.
+#
+# IN PRODUCTION:
+# DO NOT run these local database/cache containers. Production uses managed,
+# horizontally scalable, highly available infrastructure:
+#   - Database: Managed PostgreSQL with connection pooler (e.g., Neon / Supabase / AWS RDS)
+#   - Cache: Managed Redis with clustering and replication (e.g., Upstash / AWS ElastiCache)
+#   - Compute: Serverless autoscaling containers (e.g., Google Cloud Run)
+# ==============================================================================
+
+services:
+  # ── Local PostgreSQL Container ──────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: root_ctf_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: veyra_ctf
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d veyra_ctf"]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+
+  # ── Local Redis Container ───────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: root_ctf_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 5s
+      retries: 5
+
+  # ── Platform API Scoring Service ────────────────────────────────────────────
+  platform:
+    build:
+      context: ../platform
+      dockerfile: Dockerfile
+    container_name: root_ctf_platform
+    restart: unless-stopped
+    ports:
+      - "${PORT:-8080}:8080"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 8080
+      # If .env variables are blank, automatically fallback to local container endpoints
+      DATABASE_URL: ${DATABASE_URL:-postgres://postgres:postgres@postgres:5432/veyra_ctf}
+      DATABASE_POOLED_URL: ${DATABASE_POOLED_URL:-postgres://postgres:postgres@postgres:5432/veyra_ctf}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      JWT_SECRET: ${JWT_SECRET:-}
+      ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET:-}
+      RESET_TOKEN: ${RESET_TOKEN:-}
+      SENTRY_DSN: ${SENTRY_DSN:-}
+      COLLAB_BASE_DOMAIN: ${COLLAB_BASE_DOMAIN:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  redis_data:

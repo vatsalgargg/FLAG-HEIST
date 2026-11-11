@@ -1,0 +1,186 @@
+name: flagheist
+x-platform-env: &platform-env
+  NODE_ENV: ${CTF_NODE_ENV:-development}
+  PORT: 8080
+  SQLITE_PATH: /app/data/flagheist.db
+  REDIS_URL: redis://redis:6379
+  JWT_SECRET: ${JWT_SECRET:-local-team-key-change-before-production-0001}
+  ADMIN_JWT_SECRET: ${ADMIN_JWT_SECRET:-local-admin-key-change-before-production-0002}
+  RESET_TOKEN: ${RESET_TOKEN:-local-reset-key-change-before-production-0003}
+  FLAG_PEPPER: ${FLAG_PEPPER:-local-flag-pepper-change-before-production-0004}
+  ADMIN_SEED_USERNAME: ${ADMIN_SEED_USERNAME:-admin}
+  ADMIN_SEED_PASSWORD: ${ADMIN_SEED_PASSWORD:-local-organiser-password}
+  PLATFORM_ORIGIN: ${PLATFORM_ORIGIN:-http://localhost:3000}
+  TURNSTILE_SECRET_KEY: ${TURNSTILE_SECRET_KEY:-}
+  SENTRY_DSN: ${SENTRY_DSN:-}
+  COLLAB_URL: http://collab:8082
+  COLLAB_PUBLIC_URL: http://localhost:${CTF_COLLAB_PORT:-8182}
+  COLLAB_CALLBACK_URL: http://collab:8082
+  CHALLENGE_01_PUBLIC_URL: http://localhost:${CTF_CH01_PORT:-3101}
+  CHALLENGE_01_URL: http://challenge01:3001
+  CHALLENGE_03_URL: http://challenge03:3003
+  CHALLENGE_03_TWITTER_URL: http://localhost:${CTF_CH03_PORT:-3103}
+  CHALLENGE_04_PUBLIC_URL: http://localhost:${CTF_CH04_PORT:-3104}
+  CHALLENGE_04_URL: http://challenge04:3004
+  CHALLENGE_05_PUBLIC_URL: http://localhost:${CTF_CH05_PORT:-3105}
+  CHALLENGE_05_URL: http://challenge05:3005
+  CHALLENGE_07_PUBLIC_URL: http://localhost:${CTF_CH07_PORT:-3107}
+  CHALLENGE_07_URL: http://challenge07:3007
+  CHALLENGE_08_PUBLIC_URL: http://localhost:${CTF_CH07_PORT:-3107}
+  CHALLENGE_08_URL: http://challenge07:3007
+  CHALLENGE_09_PUBLIC_URL: http://localhost:${CTF_CH09_PORT:-3109}
+  CHALLENGE_09_URL: http://challenge09:3009
+  CHALLENGE_10_PUBLIC_URL: http://localhost:${CTF_CH10_PORT:-3110}
+  CHALLENGE_10_URL: http://challenge10:3010
+  CHALLENGE_12_PUBLIC_URL: http://localhost:${CTF_CH12_PORT:-3112}
+  CHALLENGE_12_URL: http://challenge12:3012
+  CHALLENGE_13_PUBLIC_URL: http://localhost:${CTF_CH13_PORT:-3113}
+  CHALLENGE_13_URL: http://challenge13:3013
+x-target: &target
+  restart: unless-stopped
+  init: true
+  mem_limit: 256m
+  cpus: 1
+  pids_limit: 64
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+services:
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 3s
+      retries: 20
+  platform:
+    build: ./services/ctf/platform
+    environment: *platform-env
+    ports: ["127.0.0.1:${CTF_API_PORT:-8180}:8080"]
+    volumes: [sqlite_data:/app/data, ./services/ctf/challenges:/challenges:ro]
+    depends_on:
+      redis: { condition: service_healthy }
+  collab:
+    <<: *target
+    container_name: flagheist-collab
+    build: ./services/ctf/collab
+    ports: ["127.0.0.1:${CTF_COLLAB_PORT:-8182}:8082"]
+    environment:
+      RESET_TOKEN: ${RESET_TOKEN:-local-reset-key-change-before-production-0003}
+  challenge01:
+    <<: *target
+    build: ./services/ctf/static
+    environment:
+      PORT: 3001
+      CHALLENGE_ID: 1
+      RESET_TOKEN: ${RESET_TOKEN:-local-reset-key-change-before-production-0003}
+    ports: ["127.0.0.1:${CTF_CH01_PORT:-3101}:3001"]
+    volumes: [./services/ctf/challenges/01-staging-site/public:/public:ro]
+    read_only: true
+  challenge03:
+    <<: *target
+    build: ./services/ctf/static
+    environment:
+      PORT: 3003
+      CHALLENGE_ID: 3
+      RESET_TOKEN: ${RESET_TOKEN:-local-reset-key-change-before-production-0003}
+    ports: ["127.0.0.1:${CTF_CH03_PORT:-3103}:3003"]
+    volumes: [./services/ctf/challenges/03-twitter-trail/public:/public:ro]
+    read_only: true
+  challenge04:
+    <<: *target
+    build: ./services/ctf/challenges/04-employee-portal
+    ports: ["127.0.0.1:${CTF_CH04_PORT:-3104}:3004"]
+    read_only: true
+    environment:
+      RESET_TOKEN: ${RESET_TOKEN:-local-reset-key-change-before-production-0003}
+  challenge05:
+    <<: *target
+    build: ./services/ctf/challenges/05-who-is-ethan-cole
+    ports: ["127.0.0.1:${CTF_CH05_PORT:-3105}:3005"]
+    read_only: true
+    environment:
+      RESET_TOKEN: ${RESET_TOKEN:-local-reset-key-change-before-production-0003}
+  challenge07:
+    <<: *target
+    build: ./services/ctf/challenges/07-invoice-trail
+    ports: ["127.0.0.1:${CTF_CH07_PORT:-3107}:3007"]
+    environment:
+      RESET_TOKEN: ${RESET_TOKEN:-local-reset-key-change-before-production-0003}
+    volumes: [portal_data:/app/data]
+  challenge09:
+    <<: *target
+    build: ./services/ctf/challenges/09-session-bug
+    ports: ["127.0.0.1:${CTF_CH09_PORT:-3109}:3009"]
+    read_only: true
+    environment:
+      RESET_TOKEN: ${RESET_TOKEN:-local-reset-key-change-before-production-0003}
+  sandbox-image10:
+    image: flagheist-ch10:local
+    profiles: [images]
+    build:
+      context: ./services/ctf
+      dockerfile: sandbox/Dockerfile
+      args: { CHALLENGE_DIR: 10-config-backup }
+  sandbox-image12:
+    image: flagheist-ch12:local
+    profiles: [images]
+    build:
+      context: ./services/ctf
+      dockerfile: sandbox/Dockerfile
+      args: { CHALLENGE_DIR: 12-diagnostics-backdoor }
+  sandbox-image13:
+    image: flagheist-ch13:local
+    profiles: [images]
+    build:
+      context: ./services/ctf
+      dockerfile: sandbox/Dockerfile
+      args: { CHALLENGE_DIR: 13-admin-coverup }
+  challenge10:
+    build: { context: ./services/ctf/sandbox, dockerfile: gateway.Dockerfile }
+    ports: ["127.0.0.1:${CTF_CH10_PORT:-3110}:3010"]
+    environment:
+      CHALLENGE_ID: 10
+      RESET_TOKEN: ${RESET_TOKEN:-local-reset-key-change-before-production-0003}
+    volumes: [/var/run/docker.sock:/var/run/docker.sock]
+    mem_limit: 192m
+    pids_limit: 64
+  challenge12:
+    build: { context: ./services/ctf/sandbox, dockerfile: gateway.Dockerfile }
+    ports: ["127.0.0.1:${CTF_CH12_PORT:-3112}:3012"]
+    environment:
+      CHALLENGE_ID: 12
+      RESET_TOKEN: ${RESET_TOKEN:-local-reset-key-change-before-production-0003}
+    volumes: [/var/run/docker.sock:/var/run/docker.sock]
+    depends_on: [collab]
+    mem_limit: 192m
+    pids_limit: 64
+  challenge13:
+    build: { context: ./services/ctf/sandbox, dockerfile: gateway.Dockerfile }
+    ports: ["127.0.0.1:${CTF_CH13_PORT:-3113}:3013"]
+    environment:
+      CHALLENGE_ID: 13
+      RESET_TOKEN: ${RESET_TOKEN:-local-reset-key-change-before-production-0003}
+    volumes: [/var/run/docker.sock:/var/run/docker.sock]
+    depends_on: [collab]
+    mem_limit: 192m
+    pids_limit: 64
+  backup:
+    image: flagheist-platform
+    user: root
+    environment: *platform-env
+    volumes: [sqlite_data:/app/data, ./ops/backup.sh:/backup.sh:ro, ./backups:/backups]
+    entrypoint: [sh, -c, "while true; do sh /backup.sh; sleep 3600; done"]
+    depends_on:
+      platform: { condition: service_healthy }
+  monitor:
+    image: node:22-alpine
+    volumes: [./ops/monitor.mjs:/app/monitor.mjs:ro]
+    command: [node, /app/monitor.mjs]
+    environment:
+      MONITOR_URLS: http://platform:8080/healthz,http://collab:8082/healthz,http://challenge01:3001/healthz,http://challenge03:3003/healthz,http://challenge04:3004/healthz,http://challenge05:3005/healthz,http://challenge07:3007/healthz,http://challenge09:3009/healthz,http://challenge10:3010/healthz,http://challenge12:3012/healthz,http://challenge13:3013/healthz
+      ALERT_WEBHOOK_URL: ${ALERT_WEBHOOK_URL:-}
+    depends_on:
+      platform: { condition: service_started }
+
+volumes:
+  sqlite_data:
+  portal_data:

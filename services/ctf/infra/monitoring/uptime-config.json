@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json.schemastore.org/uptime-kuma",
+  "name": "ROOT CTF 2026 Production Monitoring & Uptime Matrix",
+  "version": "1.0.0",
+  "description": "Continuous health monitoring configuration for ROOT CTF scoring platform and challenge target microservices.",
+  "global_settings": {
+    "default_interval_seconds": 30,
+    "timeout_seconds": 5,
+    "max_retries": 2,
+    "resend_interval_minutes": 15,
+    "alert_channels": [
+      "slack-incident-channel",
+      "pagerduty-ctf-ops",
+      "email-organisers"
+    ]
+  },
+  "monitors": [
+    {
+      "id": "mon-platform-core",
+      "name": "Scoring Platform Core API",
+      "group": "Platform Infrastructure",
+      "url": "http://localhost:3000/healthz",
+      "method": "GET",
+      "expected_status": 200,
+      "interval_seconds": 15,
+      "timeout_seconds": 3,
+      "critical": true,
+      "description": "Core participant scoring, auth, dashboard, and leaderboard platform."
+    },
+    {
+      "id": "mon-collab-service",
+      "name": "Out-of-Band Collaborator Logger",
+      "group": "Platform Infrastructure",
+      "url": "http://localhost:8082/healthz",
+      "method": "GET",
+      "expected_status": 200,
+      "interval_seconds": 15,
+      "timeout_seconds": 3,
+      "critical": true,
+      "description": "Out-of-band request receiver and partitioned logger for asynchronous challenges."
+    },
+    {
+      "id": "mon-ch04-employee-portal",
+      "name": "Challenge 04: The Employee Portal",
+      "group": "Batch 1 Microservices",
+      "url": "http://localhost:3004/healthz",
+      "method": "GET",
+      "expected_status": 200,
+      "interval_seconds": 30,
+      "timeout_seconds": 3,
+      "critical": false,
+      "reset_url": "http://localhost:3004/reset/4"
+    },
+    {
+      "id": "mon-ch05-ethan-cole",
+      "name": "Challenge 05: Who Is Ethan Cole?",
+      "group": "Batch 1 Microservices",
+      "url": "http://localhost:3005/healthz",
+      "method": "GET",
+      "expected_status": 200,
+      "interval_seconds": 30,
+      "timeout_seconds": 3,
+      "critical": false,
+      "reset_url": "http://localhost:3005/reset/5"
+    },
+    {
+      "id": "mon-ch07-08-invoice-portal",
+      "name": "Challenges 07 & 08: Veyra Enterprise Billing Portal",
+      "group": "Batch 2 Microservices",
+      "url": "http://localhost:3007/healthz",
+      "method": "GET",
+      "expected_status": 200,
+      "interval_seconds": 20,
+      "timeout_seconds": 3,
+      "critical": true,
+      "reset_url": "http://localhost:3007/reset/7"
+    },
+    {
+      "id": "mon-ch09-session-bug",
+      "name": "Challenge 09: The Session Bug",
+      "group": "Batch 1 Microservices",
+      "url": "http://localhost:3009/healthz",
+      "method": "GET",
+      "expected_status": 200,
+      "interval_seconds": 30,
+      "timeout_seconds": 3,
+      "critical": false,
+      "reset_url": "http://localhost:3009/reset/9"
+    },
+    {
+      "id": "mon-ch10-config-backup",
+      "name": "Challenge 10: Config Backup Exporter",
+      "group": "Batch 3 Sandboxed Modules",
+      "url": "http://localhost:3010/healthz",
+      "method": "GET",
+      "expected_status": 200,
+      "interval_seconds": 30,
+      "timeout_seconds": 3,
+      "critical": false,
+      "reset_url": "http://localhost:3010/reset/10"
+    },
+    {
+      "id": "mon-ch12-diagnostics-backdoor",
+      "name": "Challenge 12: Diagnostics Backdoor System",
+      "group": "Batch 3 Sandboxed Modules",
+      "url": "http://localhost:3012/healthz",
+      "method": "GET",
+      "expected_status": 200,
+      "interval_seconds": 30,
+      "timeout_seconds": 3,
+      "critical": false,
+      "reset_url": "http://localhost:3012/reset/12"
+    },
+    {
+      "id": "mon-ch13-admin-coverup",
+      "name": "Challenge 13: Admin Cover-Up (Final Challenge)",
+      "group": "Batch 3 Sandboxed Modules",
+      "url": "http://localhost:3013/healthz",
+      "method": "GET",
+      "expected_status": 200,
+      "interval_seconds": 30,
+      "timeout_seconds": 3,
+      "critical": false,
+      "reset_url": "http://localhost:3013/reset/13"
+    }
+  ],
+  "synthetic_heartbeats": [
+    {
+      "name": "Cloudflare CDN Edge Cache Verification",
+      "target_url": "http://localhost:3000/api/leaderboard",
+      "assert_headers": {
+        "Cache-Control": "public, max-age=5, s-maxage=5, stale-while-revalidate=10"
+      },
+      "max_latency_ms": 50
+    }
+  ]
+}

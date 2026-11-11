@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Veyra Cloud Solutions — Enterprise Infrastructure</title>
+  <style>
+    :root {
+      --bg: #0a0d14;
+      --card-bg: #121624;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #00d2ff;
+      --border: #1e293b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 1.5rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .logo { font-size: 1.3rem; font-weight: 700; color: #fff; letter-spacing: -0.5px; }
+    .logo span { color: var(--accent); }
+    nav a { color: var(--muted); text-decoration: none; margin-left: 2rem; font-size: 0.95rem; }
+    nav a:hover { color: #fff; }
+    .hero {
+      max-width: 900px;
+      margin: 5rem auto;
+      text-align: center;
+      padding: 0 1.5rem;
+    }
+    .hero h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: 1.2rem;
+      color: var(--muted);
+      margin-bottom: 2.5rem;
+      line-height: 1.7;
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      max-width: 1200px;
+      margin: 4rem auto;
+      padding: 0 2rem;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2rem;
+    }
+    .card h3 { color: #fff; margin-bottom: 0.75rem; font-size: 1.2rem; }
+    .card p { color: var(--muted); font-size: 0.95rem; }
+    footer {
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--muted);
+      font-size: 0.875rem;
+      margin-top: 6rem;
+    }
+  </style>
+  <!-- Internal notice: Staging environment cluster routing disabled in edge router. Refer to robots.txt or ops service catalog. -->
+</head>
+<body>
+  <header>
+    <div class="logo">VEYRA <span>CLOUD</span></div>
+    <nav>
+      <a href="#solutions">Solutions</a>
+      <a href="#platform">Platform</a>
+      <a href="#compliance">Compliance</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <h1>Distributed Resilience for High-Scale Workloads</h1>
+      <p>
+        Veyra Cloud Solutions engineers hardened compute fabrics, real-time edge telemetry,
+        and zero-trust microservice meshes designed to scale continuously across hybrid regions.
+      </p>
+    </section>
+
+    <section class="features" id="solutions">
+      <div class="card">
+        <h3>Edge Compute Mesh</h3>
+        <p>Global low-latency node execution with sub-millisecond warm starts and isolated execution pools.</p>
+      </div>
+      <div class="card">
+        <h3>Resilient Ledger Storage</h3>
+        <p>Append-only audit architectures and distributed transaction persistence with automatic multi-zone failover.</p>
+      </div>
+      <div class="card">
+        <h3>Zero-Trust Telemetry</h3>
+        <p>Real-time distributed observability and continuous identity verification across all workload boundaries.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Veyra Cloud Solutions Inc. All rights reserved. SOC 2 Type II Certified.</p>
+  </footer>
+</body>
+</html>

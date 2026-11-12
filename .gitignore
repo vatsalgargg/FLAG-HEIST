@@ -52,7 +52,7 @@ ctf.zip
 !.env.example
 !**/.env.example
 .taste-skill/
-/backups/
+backups/
 
-# TryHackMe room answers (private)
-deploy/tryhackme/room/ANSWERS*
+.vercel
+.env*

@@ -3,15 +3,8 @@
 import { useCTF } from "@/context/CTFContext";
 
 export function ChallengeNav() {
-  const {
-    goToNext,
-    goToPrev,
-    canGoNext,
-    canGoPrev,
-    isSolved,
-    team,
-    totalChallenges,
-  } = useCTF();
+  const { goToNext, goToPrev, canGoNext, canGoPrev, index, totalChallenges } =
+    useCTF();
 
   return (
     <div className="flex items-center justify-between">
@@ -34,15 +27,14 @@ export function ChallengeNav() {
       </button>
 
       <span className="text-sm font-mono" style={{ color: "var(--fg-muted)" }}>
-        {team.currentChallengeIndex + 1} / {totalChallenges}
+        {index + 1} / {totalChallenges}
       </span>
 
       <button
         onClick={goToNext}
-        disabled={!canGoNext || !isSolved}
+        disabled={!canGoNext}
         className="flex items-center gap-2 text-sm cursor-pointer transition-opacity hover:opacity-80 disabled:opacity-25 disabled:cursor-not-allowed"
-        style={{ color: isSolved && canGoNext ? "var(--accent)" : "var(--fg-muted)" }}
-        title={!isSolved && canGoNext ? "Solve this challenge to proceed" : undefined}
+        style={{ color: canGoNext ? "var(--accent)" : "var(--fg-muted)" }}
       >
         Next
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
@@ -58,4 +50,3 @@ export function ChallengeNav() {
     </div>
   );
 }
-

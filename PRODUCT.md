@@ -21,4 +21,4 @@ Keep the Flag Heist name. The user supplied Screencast_20261109_144614.webm as t
 Audience and launch details were not specified. The landing copy addresses people exploring the existing CTF.
 
 ## Supplied Event Facts
-The user's event banner confirms 12–13 November, hybrid participation, team sizes of one to three, entry fees of ₹75 solo / ₹100 duo / ₹150 trio, and Protocol branding. Its QR code resolves to the Google registration form used by the landing page. The banner's red-hooded, ivory-masked character replaces the reference video's skull at the user's request.
+The user's event banner confirms 12–13 November, hybrid participation, and Protocol branding. The banner's red-hooded, ivory-masked character replaces the reference video's skull at the user's request.

@@ -1,18 +1,21 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { api } from "@/lib/api";
-import { useCTF } from "@/context/CTFContext";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 interface TopBarProps {
-  onHintsClick?: () => void;
-  onLeaderboardClick: () => void;
+  onHintsClick: () => void;
 }
 
-export function TopBar({ onHintsClick, onLeaderboardClick }: TopBarProps) {
+export function TopBar({ onHintsClick }: TopBarProps) {
+  const { user, logout } = useAuth();
   const router = useRouter();
-  const { team } = useCTF();
+
+  function handleLogout() {
+    logout();
+    router.replace("/login");
+  }
 
   return (
     <header
@@ -20,20 +23,38 @@ export function TopBar({ onHintsClick, onLeaderboardClick }: TopBarProps) {
       style={{ borderBottom: "1px solid var(--border)" }}
     >
       <div className="flex items-center gap-4">
-        <h1 className="text-base font-semibold tracking-tight"><Link href="/">Flag Heist</Link></h1>
+        <h1 className="text-base font-semibold tracking-tight">
+          <Link href="/">Flag Heist</Link>
+        </h1>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        {/* Score */}
-        <span
-          className="text-sm font-mono px-3 py-1.5 rounded"
+        {user && (
+          <>
+            <span
+              className="max-w-[16rem] truncate text-sm px-1"
+              style={{ color: "var(--fg-muted)" }}
+              title={user.username}
+            >
+              {user.username}
+            </span>
+            <button
+              onClick={handleLogout}
+              className="text-sm px-3 py-1.5 rounded cursor-pointer transition-opacity hover:opacity-80"
+              style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
+            >
+              Log out
+            </button>
+          </>
+        )}
+        <Link
+          href="/leaderboard"
+          className="text-sm px-3 py-1.5 rounded transition-opacity hover:opacity-80"
           style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
         >
-          {team.score} pts
-        </span>
-
-        {/* Hints button */}
-        {onHintsClick && <button
+          Info
+        </Link>
+        <button
           onClick={onHintsClick}
           className="flex items-center gap-2 text-sm px-3 py-1.5 rounded cursor-pointer transition-opacity hover:opacity-80"
           style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
@@ -49,32 +70,8 @@ export function TopBar({ onHintsClick, onLeaderboardClick }: TopBarProps) {
             <circle cx="8" cy="11" r="0.5" fill="currentColor" />
           </svg>
           Hints
-        </button>}
-
-        {/* Leaderboard button */}
-        <button
-          onClick={onLeaderboardClick}
-          className="flex items-center gap-2 text-sm px-3 py-1.5 rounded cursor-pointer transition-opacity hover:opacity-80"
-          style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-        >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-            <rect x="2" y="8" width="3" height="6" rx="0.5" stroke="currentColor" strokeWidth="1.2" />
-            <rect x="6.5" y="4" width="3" height="10" rx="0.5" stroke="currentColor" strokeWidth="1.2" />
-            <rect x="11" y="6" width="3" height="8" rx="0.5" stroke="currentColor" strokeWidth="1.2" />
-          </svg>
-          Leaderboard
         </button>
-
-        <button className="text-sm cursor-pointer" onClick={async () => { try { await api("/auth/logout", {}); router.replace("/login"); router.refresh(); } catch { window.alert("Logout failed. Please try again."); } }}>Log out</button>
-        {/* Team name */}
-        <span
-          className="text-xs ml-2 px-2 py-1 rounded"
-          style={{ color: "var(--fg-muted)" }}
-        >
-          {team.teamName}
-        </span>
       </div>
     </header>
   );
 }
-

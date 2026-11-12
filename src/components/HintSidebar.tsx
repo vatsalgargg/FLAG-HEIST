@@ -9,7 +9,7 @@ interface HintSidebarProps {
 }
 
 export function HintSidebar({ open, onClose }: HintSidebarProps) {
-  const { currentChallenge, revealedHintsForCurrent, revealHint, isSolved, available } =
+  const { currentChallenge, revealedHintsForCurrent, revealHint, totalDeducted } =
     useCTF();
 
   const [pending, setPending] = useState<number | null>(null);
@@ -17,19 +17,15 @@ export function HintSidebar({ open, onClose }: HintSidebarProps) {
   if (!open) return null;
   return (
     <>
-      {/* Overlay */}
-      {open && (
-        <div
-          className="fixed inset-0 z-40"
-          style={{ background: "rgba(0,0,0,0.5)" }}
-          onClick={onClose}
-        />
-      )}
-
-      {/* Sidebar */}
       <div
-        inert={!open}
-        role="dialog" aria-label="Challenge hints"
+        className="fixed inset-0 z-40"
+        style={{ background: "rgba(0,0,0,0.5)" }}
+        onClick={onClose}
+      />
+
+      <div
+        role="dialog"
+        aria-label="Challenge hints"
         className="fixed top-0 right-0 h-full z-50 flex flex-col transition-transform duration-200"
         style={{
           width: "min(400px, 90vw)",
@@ -38,7 +34,6 @@ export function HintSidebar({ open, onClose }: HintSidebarProps) {
           transform: open ? "translateX(0)" : "translateX(100%)",
         }}
       >
-        {/* Header */}
         <div
           className="flex items-center justify-between px-6 py-5"
           style={{ borderBottom: "1px solid var(--border)" }}
@@ -61,13 +56,19 @@ export function HintSidebar({ open, onClose }: HintSidebarProps) {
           </button>
         </div>
 
-        {/* Content */}
         <div className="flex-1 overflow-y-auto px-6 py-5">
           <p className="text-sm mb-6" style={{ color: "var(--fg-muted)" }}>
-            Revealing a hint deducts points from your score immediately.
+            Revealing a hint deducts its point value from your team&apos;s total
+            on this site. Your team has lost{" "}
+            <strong style={{ color: "var(--accent)" }}>−{totalDeducted} pts</strong>{" "}
+            to hints so far.
           </p>
 
-          {error && <p role="alert">{error}</p>}
+          {error && (
+            <p role="alert" className="text-sm mb-4" style={{ color: "var(--accent)" }}>
+              {error}
+            </p>
+          )}
           <div className="flex flex-col gap-4">
             {currentChallenge.hints.map((hint, idx) => {
               const isRevealed = revealedHintsForCurrent.includes(idx);
@@ -78,7 +79,7 @@ export function HintSidebar({ open, onClose }: HintSidebarProps) {
                   className="rounded-lg p-4"
                   style={{
                     background: "var(--bg)",
-                    border: `1px solid ${isRevealed ? "var(--border)" : "var(--border)"}`,
+                    border: "1px solid var(--border)",
                   }}
                 >
                   <div className="flex items-center justify-between mb-2">
@@ -88,10 +89,7 @@ export function HintSidebar({ open, onClose }: HintSidebarProps) {
                     >
                       Hint {idx + 1}
                     </span>
-                    <span
-                      className="text-xs"
-                      style={{ color: "var(--accent)" }}
-                    >
+                    <span className="text-xs" style={{ color: "var(--accent)" }}>
                       −{hint.cost} pts
                     </span>
                   </div>
@@ -101,11 +99,34 @@ export function HintSidebar({ open, onClose }: HintSidebarProps) {
                   ) : (
                     <button
                       onClick={async () => {
-                        if (!window.confirm(`Reveal this hint for ${hint.cost} points? The deduction is permanent.`)) return;
-                        setPending(idx); setError("");
-                        try { await revealHint(idx); } catch (err) { setError(err instanceof Error ? err.message : "Unable to reveal hint."); } finally { setPending(null); }
+                        if (
+                          !window.confirm(
+                            `Reveal this hint? It costs ${hint.cost} points in the room.`,
+                          )
+                        )
+                          return;
+                        setPending(idx);
+                        setError("");
+                        try {
+                          const result = await revealHint(idx);
+                          if (!result.success) {
+                            setError("Unable to reveal hint.");
+                          } else if (!result.tracked) {
+                            setError(
+                              "Hint revealed, but score tracking failed. Tell an organiser.",
+                            );
+                          }
+                        } catch (err) {
+                          setError(
+                            err instanceof Error
+                              ? err.message
+                              : "Unable to reveal hint.",
+                          );
+                        } finally {
+                          setPending(null);
+                        }
                       }}
-                      disabled={isSolved || !available || pending !== null}
+                      disabled={pending !== null}
                       className="text-sm cursor-pointer transition-opacity hover:opacity-80 disabled:opacity-40 disabled:cursor-not-allowed"
                       style={{ color: "var(--accent)" }}
                     >
@@ -115,10 +136,14 @@ export function HintSidebar({ open, onClose }: HintSidebarProps) {
                 </div>
               );
             })}
+            {currentChallenge.hints.length === 0 && (
+              <p className="text-sm" style={{ color: "var(--fg-muted)" }}>
+                No hints for this challenge.
+              </p>
+            )}
           </div>
         </div>
       </div>
     </>
   );
 }
-

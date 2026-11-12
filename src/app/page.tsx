@@ -1,16 +1,13 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import {
-  EvidencePreview,
-  HackerVisual,
-  TeamRegistration,
-} from "@/components/LandingExperience";
+import { EvidencePreview, HackerVisual } from "@/components/LandingExperience";
+import { RoomReveal } from "@/components/RoomReveal";
 import styles from "./landing.module.css";
 
 export const metadata: Metadata = {
   title: "Flag Heist | 12–13 November | A Protocol CTF",
   description:
-    "Plan it. Break in. Capture the flag. Join Flag Heist on 12–13 November: a hybrid CTF for teams of one to three.",
+    "Plan it. Break in. Capture the flag. Flag Heist runs 12–13 November as a hybrid CTF.",
 };
 
 function Arrow({ diagonal = false }: { diagonal?: boolean }) {
@@ -60,9 +57,9 @@ export default function Home() {
             <a href="#challenges">The challenges</a>
             <a href="#field-guide">Field guide</a>
           </nav>
-          <a href="#register" className={styles.headerCta}>
-            Join the heist <Arrow diagonal />
-          </a>
+          <Link href="/login" className={styles.headerCta}>
+            Team login <Arrow diagonal />
+          </Link>
         </header>
       </div>
       <main id="main">
@@ -84,10 +81,7 @@ export default function Home() {
                 Think like an attacker. Capture the flag.
               </p>
               <div className={styles.heroActions}>
-                <a href="#register" className={styles.primaryButton}>
-                  Join the heist <Arrow diagonal />
-                </a>
-                <Link href="/login" className={styles.textLink}>
+                <Link href="/login" className={styles.primaryButton}>
                   Enter the arena <Arrow diagonal />
                 </Link>
               </div>
@@ -95,7 +89,7 @@ export default function Home() {
             <HackerVisual />
             <div className={styles.heroBottom}>
               <span>HYBRID EVENT</span>
-              <span>GO SOLO. OR BRING YOUR CREW.</span>
+              <span>13 CHALLENGES. ONE STORY.</span>
               <a href="#mission">
                 The briefing{" "}
                 <svg
@@ -146,10 +140,10 @@ export default function Home() {
               another piece of the breach.
             </p>
             <p>
-              Thirteen connected challenges. Three difficulty tiers. One
-              investigation that goes all the way to the admin cover-up.
+              Thirteen connected challenges. One investigation that goes all
+              the way to the admin cover-up.
             </p>
-            <Link className={styles.lightLink} href="/arena">
+            <Link className={styles.lightLink} href="/login">
               Open the first case <Arrow />
             </Link>
           </div>
@@ -170,40 +164,18 @@ export default function Home() {
           <EvidencePreview />
         </section>
         <section
-          id="register"
-          className={styles.registration}
-          aria-labelledby="register-title"
+          className={`${styles.section} ${styles.challenges}`}
+          aria-labelledby="room-title"
         >
-          <div className={styles.registrationIntro}>
-            <h2 id="register-title">
-              ASSEMBLE
-              <br />
-              YOUR CREW.
-            </h2>
+          <div className={styles.sectionHeading}>
+            <h2 id="room-title">SOLVE IT LIVE.</h2>
             <p>
-              12–13 November. Online and on the ground.
+              The hands-on challenges live in the TryHackMe room.
               <br />
-              One to three people. One shared mission.
+              The link unlocks when the countdown ends.
             </p>
-            <div className={styles.loot}>
-              <svg
-                width="27"
-                height="27"
-                viewBox="0 0 28 28"
-                fill="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="m14 2 11 6v12l-11 6L3 20V8l11-6Zm0 0v24M3 8l11 6 11-6"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                />
-              </svg>
-              <span>THE LOOT</span>
-              <strong>CLASSIFIED</strong>
-            </div>
           </div>
-          <TeamRegistration />
+          <RoomReveal variant="landing" />
         </section>
         <section
           id="field-guide"
@@ -232,13 +204,13 @@ export default function Home() {
             </details>
             <details>
               <summary>
-                Can I participate on my own?
+                Do I need a team?
                 <span aria-hidden="true" />
               </summary>
               <p>
-                Yes. Enter solo for ₹75, as a duo for ₹100, or as a team of
-                three for ₹150. You can register through the event registration
-                form.
+                Yes. The arena is for registered teams. Log in with your team
+                name and the password shared by the organisers. The TryHackMe
+                room itself is open to everyone.
               </p>
             </details>
             <details>
@@ -247,9 +219,8 @@ export default function Home() {
                 <span aria-hidden="true" />
               </summary>
               <p>
-                Flag Heist takes place on 12–13 November in hybrid mode. Check
-                the registration form or contact the organizers for the schedule
-                and joining instructions.
+                Flag Heist takes place on 12–13 November in hybrid mode. The
+                room link appears on this page when the countdown ends.
               </p>
             </details>
             <details>
@@ -258,10 +229,9 @@ export default function Home() {
                 <span aria-hidden="true" />
               </summary>
               <p>
-                The arena follows 13 connected challenges across introductory,
-                progressive, and final tiers. Expect web exploitation,
-                cryptography, and open-source investigation. Hints are available
-                in the arena, with a score cost.
+                The arena follows 13 connected challenges that tell one
+                story, from the attacker&apos;s first foothold to the admin
+                cover-up. Hints are available in the arena, with a score cost.
               </p>
             </details>
             <details>
@@ -272,14 +242,7 @@ export default function Home() {
               <p>
                 Contact Vatsal at <a href="tel:+919591305252">95913 05252</a> or
                 Vismay at <a href="tel:+919031546471">90315 46471</a> for event
-                and registration questions.{" "}
-                <a
-                  href="/media/event-banner.png"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  View the event banner.
-                </a>
+                questions.
               </p>
             </details>
           </div>
@@ -287,9 +250,9 @@ export default function Home() {
       </main>
       <footer className={styles.footer}>
         <div className={styles.footerTop}>
-          <a href="#register">
-            Your move. Join the heist. <Arrow diagonal />
-          </a>
+          <Link href="/login">
+            Your move. Enter the arena. <Arrow diagonal />
+          </Link>
           <span>A PROTOCOL EVENT</span>
         </div>
         <p className={styles.footerWordmark}>FLAG HEIST</p>

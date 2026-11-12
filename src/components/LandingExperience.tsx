@@ -3,33 +3,19 @@
 import { useId, useState } from "react";
 import Image from "next/image";
 import styles from "@/app/landing.module.css";
+import { challenges } from "@/data/challenges";
 
-const tracks = [
-  {
-    name: "Web exploitation",
-    title: "The Forgotten Staging Site",
-    file: "staging_environment",
-    category: "WEB / INTRO",
-    body: "An old staging environment is still live. No visible links. No obvious clues. Find what the server was never meant to leave behind.",
-    clue: "The attacker’s entry point was hiding in plain sight.",
-  },
-  {
-    name: "Cryptography",
-    title: "The Broken Lock",
-    file: "encrypted_message",
-    category: "CRYPTO / INTRO",
-    body: "A recovered internal message is locked with RSA. Veyra believed its public key was harmless. Investigate the lock and recover the message.",
-    clue: "A public key is only as strong as the numbers behind it.",
-  },
-  {
-    name: "Open-source intelligence",
-    title: "The Twitter Trail",
-    file: "public_profile",
-    category: "OSINT / INTRO",
-    body: "Before targeting the system, the attacker studied its people. Follow an employee’s public profile and look for the detail everyone else scrolled past.",
-    clue: "The investigation starts with what’s already public.",
-  },
-];
+const tracks = challenges.map((ch) => ({
+  id: ch.id,
+  title: ch.title,
+  file: ch.title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, ""),
+  body: ch.narrative,
+  clue: ch.storyBeat,
+  points: ch.points,
+}));
 
 export function HackerVisual() {
   const [paused, setPaused] = useState(false);
@@ -91,14 +77,14 @@ export function EvidencePreview() {
   return (
     <div className={styles.evidenceLayout}>
       <div
-        className={styles.trackList}
+        className={`${styles.trackList} ${styles.trackListCompact}`}
         role="tablist"
         aria-label="Challenge tracks"
         aria-orientation="vertical"
       >
         {tracks.map((item, i) => (
           <button
-            key={item.name}
+            key={item.id}
             id={`${id}-tab-${i}`}
             type="button"
             role="tab"
@@ -119,7 +105,9 @@ export function EvidencePreview() {
               document.getElementById(`${id}-tab-${next}`)?.focus();
             }}
           >
-            <span>{item.name}</span>
+            <span>
+              {String(item.id).padStart(2, "0")} · {item.title}
+            </span>
             <svg
               width="23"
               height="23"
@@ -150,7 +138,9 @@ export function EvidencePreview() {
       >
         <div className={styles.fileHeader}>
           <span>{track.file}.txt</span>
-          <span>{track.category}</span>
+          <span>
+            {String(track.id).padStart(2, "0")} / {tracks.length}
+          </span>
         </div>
         <div key={selected} className={styles.fileBody}>
           <div className={styles.fileIcon} aria-hidden="true">
@@ -173,93 +163,11 @@ export function EvidencePreview() {
         </div>
         <div className={styles.fileFooter}>
           <span>BRIEFING PREVIEW</span>
-          <span>15 PTS</span>
+          <span>{track.points} PTS</span>
         </div>
       </div>
     </div>
   );
 }
 
-const registrationUrl =
-  "https://docs.google.com/forms/d/e/1FAIpQLScvdT0v5UVwB03UDiszKSakOfONLL02DawCJdXlk43DW-tECQ/viewform";
 
-export function TeamRegistration() {
-  const [size, setSize] = useState(1);
-  const fees = [75, 100, 150];
-  return (
-    <div className={styles.teamRegistration}>
-      <fieldset>
-        <legend>HOW MANY IN YOUR CREW?</legend>
-        <div className={styles.teamOptions}>
-          {["Lone wolf", "Duo", "Trio"].map((name, i) => (
-            <label
-              key={name}
-              className={size === i + 1 ? styles.selectedTeam : ""}
-            >
-              <input
-                type="radio"
-                name="team-size"
-                value={i + 1}
-                checked={size === i + 1}
-                onChange={() => setSize(i + 1)}
-              />
-              <span className={styles.teamNumber}>
-                {i + 1}
-              </span>
-              <span>{name}</span>
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="none"
-                aria-hidden="true"
-              >
-                <path
-                  d="m3 8 3 3 7-7"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                />
-              </svg>
-            </label>
-          ))}
-        </div>
-      </fieldset>
-      <div className={styles.feeLine}>
-        <div>
-          <span>ENTRY FEE</span>
-          <p>{size === 1 ? "For one operative" : `For your team of ${size}`}</p>
-        </div>
-        <strong aria-live="polite">
-          ₹{fees[size - 1]}
-          <small> / team</small>
-        </strong>
-      </div>
-      <a
-        className={styles.registerButton}
-        href={registrationUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Register your {size === 1 ? "entry" : "crew"}
-        <svg
-          width="21"
-          height="21"
-          viewBox="0 0 24 24"
-          fill="none"
-          aria-hidden="true"
-        >
-          <path
-            d="M5 19 19 5M5 5h14v14"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          />
-        </svg>
-      </a>
-      <p className={styles.formNote}>
-        Opens the official registration form in a new tab.
-        <br />
-        Select your team size again in the form.
-      </p>
-    </div>
-  );
-}

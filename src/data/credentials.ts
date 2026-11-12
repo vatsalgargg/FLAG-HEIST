@@ -1,0 +1,48 @@
+export interface TeamCredential {
+  username: string;
+  password: string;
+  altPasswords?: string[];
+}
+
+export const teamCredentials: TeamCredential[] = [
+  { username: "Grand_Zeno", password: "Gran8068" },
+  { username: "Clankers", password: "Clan8004" },
+  { username: "Bick and Dalls", password: "Bick1819" },
+  { username: "S-T-L", password: "S-T-5564", altPasswords: ["STL5564"] },
+  { username: "Dihaadi Majdoor", password: "Diha8899" },
+  { username: "Flag hunters", password: "Flag0719" },
+  { username: "UK panthers", password: "UKp8460", altPasswords: ["UKpa8460"] },
+  { username: "Hard Coders", password: "Hard4294" },
+  { username: "Ghee Khatam", password: "Ghee6262" },
+  { username: "Team getaway", password: "Team0244" },
+  { username: "Ctrl+alt+win", password: "Ctrl8802" },
+  { username: "Big Yahu", password: "Big0795", altPasswords: ["BigY0795"] },
+  { username: "MEOW MAFIA", password: "MEOW7574" },
+  { username: "Putaapu Gang", password: "Puta7669" },
+  { username: "404-Flag-Found❗", password: "404-7120", altPasswords: ["404F7120"] },
+  { username: "Obsidian", password: "Obsi9509" },
+  { username: "Cyberleek", password: "Cybe3692" },
+  { username: "3FORCE", password: "3FOR7502" },
+  { username: "Two of Us", password: "Two7519", altPasswords: ["Twoo7519"] },
+  { username: "Cyber warriors", password: "Cybe3335" },
+  { username: "Binary Brain", password: "Bina4123" },
+  { username: "Midnight Paradox", password: "Midn7447" },
+  { username: "HIEST MASTERMINDS", password: "HIES6209" },
+  { username: "Subway surfers", password: "Subw5400" },
+  { username: "Cicada_3301", password: "Cica6948" },
+  { username: "The Brawlers", password: "The7589", altPasswords: ["TheB7589"] },
+  { username: "U Kruthik", password: "UKr6612", altPasswords: ["UKru6612"] },
+  { username: "Chintu coders", password: "Chin7720" },
+  { username: "Pranav r ghetia", password: "Pran8394" },
+  { username: "AAROHI SHARMA", password: "AARO2555" },
+  { username: "Harigopi", password: "Hari0881" },
+  { username: "Tvisha Desai", password: "Tvis9990" },
+  { username: "Duo", password: "Duo9999" },
+  { username: "LoopX", password: "Loop8511" },
+  { username: "Tripti kumari", password: "Trip0230" },
+  { username: "cmdAgent", password: "cmdA4825", altPasswords: ["cmda4825"] },
+  { username: "fruit loops", password: "frui3387", altPasswords: ["Fruit3387"] },
+  { username: "Error 404", password: "Erro1022", altPasswords: ["error1022"] },
+  { username: "Blah blah", password: "Blah6069", altPasswords: ["blah6069"] },
+  { username: "puffers", password: "Puff1567", altPasswords: ["puff1567"] },
+];

@@ -1,17 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  async rewrites() {
-    const api = (process.env.CTF_API_URL || "http://127.0.0.1:8180").replace(
-      /\/$/,
-      "",
-    );
-    return [
-      { source: "/api/:path*", destination: `${api}/api/:path*` },
-      { source: "/artifacts/:path*", destination: `${api}/artifacts/:path*` },
-      { source: "/healthz", destination: `${api}/healthz` },
-    ];
-  },
   async headers() {
     return [
       {

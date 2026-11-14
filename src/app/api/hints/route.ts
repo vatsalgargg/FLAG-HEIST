@@ -1,26 +1,10 @@
-import { createHash } from "node:crypto";
-import {
-  BlobError,
-  BlobPreconditionFailedError,
-  get,
-  list,
-  put,
-} from "@vercel/blob";
+import { get, list } from "@vercel/blob";
 import { connection, NextResponse } from "next/server";
-import { challenges } from "@/data/challenges";
 import { teamCredentials } from "@/data/credentials";
 import type { HintRecord, HintTotalsResponse, TeamHintTotal } from "@/data/hints";
 
 const HINT_PREFIX = "hints/";
 const BATCH_SIZE = 20;
-
-function getTeamHash(team: string) {
-  return createHash("sha256").update(team).digest("hex");
-}
-
-function isKnownTeam(team: string) {
-  return teamCredentials.some((entry) => entry.username === team);
-}
 
 async function readRecords(pathnames: string[]) {
   return Promise.all(
@@ -32,69 +16,11 @@ async function readRecords(pathnames: string[]) {
   );
 }
 
-export async function POST(request: Request) {
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
-  }
-
-  const { team, challengeId, hintIndex } = (body ?? {}) as {
-    team?: unknown;
-    challengeId?: unknown;
-    hintIndex?: unknown;
-  };
-
-  if (typeof team !== "string" || !isKnownTeam(team)) {
-    return NextResponse.json({ error: "Unknown team." }, { status: 400 });
-  }
-
-  if (
-    typeof challengeId !== "number" ||
-    !Number.isInteger(challengeId) ||
-    typeof hintIndex !== "number" ||
-    !Number.isInteger(hintIndex)
-  ) {
-    return NextResponse.json({ error: "Invalid hint." }, { status: 400 });
-  }
-
-  const challenge = challenges.find((entry) => entry.id === challengeId);
-  const hint = challenge?.hints[hintIndex];
-  if (!challenge || !hint) {
-    return NextResponse.json({ error: "Invalid hint." }, { status: 400 });
-  }
-
-  const record: HintRecord = {
-    team,
-    challengeId,
-    hintIndex,
-    cost: hint.cost,
-    createdAt: new Date().toISOString(),
-  };
-  const pathname = `${HINT_PREFIX}${getTeamHash(team)}/${challengeId}-${hintIndex}.json`;
-
-  try {
-    await put(pathname, JSON.stringify(record), {
-      access: "private",
-      addRandomSuffix: false,
-      allowOverwrite: false,
-      contentType: "application/json",
-    });
-    return NextResponse.json({ success: true, already: false, cost: hint.cost });
-  } catch (error) {
-    if (
-      error instanceof BlobPreconditionFailedError ||
-      (error instanceof BlobError && error.message.includes("already exists"))
-    ) {
-      return NextResponse.json({ success: true, already: true, cost: hint.cost });
-    }
-    console.error("Failed to record hint", error);
-    return NextResponse.json(
-      { error: "Unable to record hint." },
-      { status: 500 },
-    );
-  }
+export async function POST() {
+  return NextResponse.json(
+    { error: "Competition has ended. Final leaderboard is locked." },
+    { status: 403 },
+  );
 }
 
 export async function GET() {

@@ -2,7 +2,6 @@ import Link from "next/link";
 import { PlatformShell } from "@/components/PlatformShell";
 import {
   finalLeaderboard,
-  LEADERBOARD_LOCKED_NOTE,
   TOTAL_TASKS,
   type FinalLeaderboardEntry,
 } from "@/data/leaderboard";
@@ -38,30 +37,6 @@ export default function LeaderboardPage() {
 
   return (
     <PlatformShell title="Final Leaderboard">
-      <div
-        className="arena-panel"
-        style={{ borderColor: "var(--accent)" }}
-      >
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
-          <span
-            className="text-xs font-semibold uppercase tracking-wider px-2.5 py-1 rounded"
-            style={{
-              background: "rgba(224, 64, 64, 0.16)",
-              color: "#f07878",
-              border: "1px solid rgba(224, 64, 64, 0.4)",
-            }}
-          >
-            Final Standings • Locked
-          </span>
-          <span className="text-xs" style={{ color: "var(--fg-muted)" }}>
-            {finalLeaderboard.length} teams • {TOTAL_TASKS} tasks
-          </span>
-        </div>
-        <p className="arena-muted" style={{ marginBottom: 0 }}>
-          {LEADERBOARD_LOCKED_NOTE}
-        </p>
-      </div>
-
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         {podium.map((entry, idx) => (
           <div

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useCTF } from "@/context/CTFContext";
+import { HINTS_LOCKED } from "@/data/leaderboard";
 
 interface HintSidebarProps {
   open: boolean;
@@ -96,6 +97,10 @@ export function HintSidebar({ open, onClose }: HintSidebarProps) {
 
                   {isRevealed ? (
                     <p className="text-sm leading-relaxed">{hint.text}</p>
+                  ) : HINTS_LOCKED ? (
+                    <p className="text-xs" style={{ color: "var(--fg-muted)" }}>
+                      Hints are locked — final leaderboard is frozen.
+                    </p>
                   ) : (
                     <button
                       onClick={async () => {

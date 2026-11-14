@@ -9,6 +9,8 @@ import {
 
 function isTied(a: FinalLeaderboardEntry, b: FinalLeaderboardEntry) {
   return (
+    !a.disqualified &&
+    !b.disqualified &&
     a.finalScore === b.finalScore &&
     a.roomScore === b.roomScore &&
     a.tasksSolved === b.tasksSolved &&
@@ -17,9 +19,11 @@ function isTied(a: FinalLeaderboardEntry, b: FinalLeaderboardEntry) {
 }
 
 function getRanks(entries: FinalLeaderboardEntry[]) {
-  const ranks: number[] = [];
+  const ranks: Array<number | "DQ"> = [];
   for (let i = 0; i < entries.length; i += 1) {
-    if (i > 0 && isTied(entries[i], entries[i - 1])) {
+    if (entries[i].disqualified) {
+      ranks.push("DQ");
+    } else if (i > 0 && isTied(entries[i], entries[i - 1])) {
       ranks.push(ranks[i - 1]);
     } else {
       ranks.push(i + 1);
@@ -30,7 +34,7 @@ function getRanks(entries: FinalLeaderboardEntry[]) {
 
 export default function LeaderboardPage() {
   const ranks = getRanks(finalLeaderboard);
-  const podium = finalLeaderboard.slice(0, 3);
+  const podium = finalLeaderboard.filter((e) => !e.disqualified).slice(0, 3);
 
   return (
     <PlatformShell title="Final Leaderboard">
@@ -108,9 +112,23 @@ export default function LeaderboardPage() {
             </thead>
             <tbody>
               {finalLeaderboard.map((entry, index) => (
-                <tr key={entry.team}>
-                  <td className="number">{ranks[index]}</td>
-                  <td style={{ fontWeight: index < 3 ? 600 : 400 }}>
+                <tr
+                  key={entry.team}
+                  style={entry.disqualified ? { opacity: 0.7 } : undefined}
+                >
+                  <td className="number">
+                    {entry.disqualified ? (
+                      <span
+                        className="text-xs font-semibold uppercase"
+                        style={{ color: "#f07878" }}
+                      >
+                        DQ
+                      </span>
+                    ) : (
+                      ranks[index]
+                    )}
+                  </td>
+                  <td style={{ fontWeight: index < 3 && !entry.disqualified ? 600 : 400 }}>
                     {entry.team}
                   </td>
                   <td className="number">
@@ -130,7 +148,16 @@ export default function LeaderboardPage() {
                     {entry.hintDeduction > 0 ? `−${entry.hintDeduction}` : "0"}
                   </td>
                   <td className="number" style={{ fontWeight: 600 }}>
-                    {entry.finalScore}
+                    {entry.disqualified ? (
+                      <span
+                        className="text-xs font-semibold uppercase tracking-wider"
+                        style={{ color: "#f07878" }}
+                      >
+                        Disqualified
+                      </span>
+                    ) : (
+                      entry.finalScore
+                    )}
                   </td>
                 </tr>
               ))}

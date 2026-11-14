@@ -33,43 +33,37 @@ function getRanks(entries: FinalLeaderboardEntry[]) {
 
 export default function LeaderboardPage() {
   const ranks = getRanks(finalLeaderboard);
-  const podium = finalLeaderboard.filter((e) => !e.disqualified).slice(0, 3);
+  const winner = finalLeaderboard.find((e) => !e.disqualified);
 
   return (
     <PlatformShell title="Final Leaderboard">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        {podium.map((entry, idx) => (
+      {winner && (
+        <div
+          className="arena-panel"
+          style={{ borderColor: "var(--accent)" }}
+        >
           <div
-            key={entry.team}
-            className="arena-panel"
-            style={{
-              marginBottom: 0,
-              borderColor: idx === 0 ? "var(--accent)" : "var(--border)",
-            }}
+            className="text-xs uppercase tracking-wider mb-1"
+            style={{ color: "#f07878" }}
           >
-            <div
-              className="text-xs uppercase tracking-wider mb-1"
-              style={{ color: idx === 0 ? "#f07878" : "var(--fg-muted)" }}
-            >
-              Rank #{ranks[idx]}
-            </div>
-            <div className="text-lg font-semibold mb-2">{entry.team}</div>
-            <div className="text-2xl font-bold tabular-nums mb-1">
-              {entry.finalScore}{" "}
-              <span
-                className="text-sm font-normal"
-                style={{ color: "var(--fg-muted)" }}
-              >
-                pts
-              </span>
-            </div>
-            <div className="text-xs" style={{ color: "var(--fg-muted)" }}>
-              {entry.roomScore} room − {entry.hintDeduction} hints (
-              {entry.tasksSolved}/{TOTAL_TASKS} tasks)
-            </div>
+            Winner • Rank #1
           </div>
-        ))}
-      </div>
+          <div className="text-xl font-semibold mb-1">{winner.team}</div>
+          <div className="text-2xl font-bold tabular-nums mb-1">
+            {winner.finalScore}{" "}
+            <span
+              className="text-sm font-normal"
+              style={{ color: "var(--fg-muted)" }}
+            >
+              pts
+            </span>
+          </div>
+          <div className="text-xs" style={{ color: "var(--fg-muted)" }}>
+            {winner.roomScore} room − {winner.hintDeduction} hints (
+            {winner.tasksSolved}/{TOTAL_TASKS} tasks)
+          </div>
+        </div>
+      )}
 
       <div className="arena-panel">
         <div className="arena-table" style={{ margin: 0 }}>
